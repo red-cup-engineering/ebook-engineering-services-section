@@ -1,0 +1,65 @@
+{
+  "name": "@red-cup-engineering/ebook-engineering-services-section",
+  "version": "0.3.3",
+  "type": "module",
+  "description": "Multi-chapter book assembly and a hash-verified deterministic build record; the invocation contract, not the program. Cover art generation calls an inference application and is not this substrate section's concern.",
+  "license": "UNLICENSED",
+  "exports": {
+    ".": "./src/ebook-production.mjs",
+    "./fabricate-ebook-edition": "./src/fabricate-ebook-edition.mjs",
+    "./scripts/fabricate-ebook-edition.mjs": "./scripts/fabricate-ebook-edition.mjs",
+    "./scripts/produce-ebook.mjs": "./scripts/produce-ebook.mjs",
+    "./scripts/produce-set-of-ebooks.mjs": "./scripts/produce-set-of-ebooks.mjs",
+    "./scripts/specify-ebook-edition.mjs": "./scripts/specify-ebook-edition.mjs",
+    "./specify-ebook-edition": "./src/specify-ebook-edition.mjs",
+    "./kindle-validation": "./src/kindle-validation.mjs",
+    "./scripts/validate-kindle-edition.mjs": "./scripts/validate-kindle-edition.mjs",
+    "./lint-manuscript": "./src/lint-manuscript.mjs",
+    "./narration-script": "./src/narration-script.mjs",
+    "./scripts/lint-manuscript.mjs": "./scripts/lint-manuscript.mjs",
+    "./accept-ebook-edition": "./src/accept-ebook-edition.mjs",
+    "./print-edition": "./src/print-edition.mjs",
+    "./scripts/produce-print-edition.mjs": "./scripts/produce-print-edition.mjs",
+    "./scripts/accept-print-edition.mjs": "./scripts/accept-print-edition.mjs",
+    "./advance-reader-rendition": "./src/advance-reader-rendition.mjs",
+    "./scripts/render-advance-reader-copy.mjs": "./scripts/render-advance-reader-copy.mjs"
+  },
+  "bin": {
+    "ebook-production-cli": "apps/ebook-production-cli.mjs",
+    "fabricate-ebook-from-corpus": "apps/fabricate-ebook-from-corpus.mjs"
+  },
+  "files": [
+    "src/",
+    "scripts/",
+    "apps/",
+    "templates/"
+  ],
+  "scripts": {
+    "check": "node --check src/ebook-production.mjs && node --check src/fabricate-ebook-edition.mjs && node --check src/lint-manuscript.mjs && node --check src/narration-script.mjs && node --check src/specify-ebook-edition.mjs && node --check src/kindle-validation.mjs && node --check src/print-edition.mjs && node --check scripts/derive-ebook-chapters-from-corpus.mjs && node --check scripts/produce-ebook.mjs && node --check scripts/produce-print-edition.mjs && node --check scripts/accept-print-edition.mjs && node --check scripts/fabricate-ebook-edition.mjs && node --check scripts/specify-ebook-edition.mjs && node --check scripts/validate-kindle-edition.mjs && node --check scripts/issue-ebook-edition.mjs && node --check scripts/carry-editions-forward.mjs && node --check scripts/lint-manuscript.mjs && node --check scripts/produce-set-of-ebooks.mjs && node --check scripts/record-founding.mjs && node --check apps/ebook-production-cli.mjs && node --check apps/fabricate-ebook-from-corpus.mjs && node --check test/ebook-production.test.mjs && node --check test/fabricate-ebook-edition.test.mjs && node --check test/fabricate-ebook-from-corpus.test.mjs && node --check test/design-tokens.test.mjs && node --check test/derive-ebook-chapters-from-corpus.test.mjs && node --check test/derive-ebook-chapters-from-corpus-faces.test.mjs && node --check test/lint-manuscript.test.mjs && node --check test/narration-script.test.mjs && node --check test/kindle-validation.test.mjs && node --check src/advance-reader-rendition.mjs && node --check scripts/render-advance-reader-copy.mjs && node --check test/advance-reader-rendition.test.mjs",
+    "test": "node --test test/*.test.mjs",
+    "produce-print-edition": "node scripts/produce-print-edition.mjs",
+    "accept-print-edition": "node scripts/accept-print-edition.mjs"
+  },
+  "dependencies": {
+    "@red-cup-engineering/computer-data-engineering-services-section": "0.1.0",
+    "@red-cup-engineering/computer-content-engineering-services-section": "0.1.0",
+    "@red-cup-engineering/computer-filepath-engineering-services-section": "0.1.0",
+    "@red-cup-engineering/computer-inference-engine": "0.1.0",
+    "@red-cup-engineering/computer-text-content-engineering-services-section": "0.1.0",
+    "@red-cup-engineering/cryptographic-computer-data-engineering-services-section": "0.3.0",
+    "@red-cup-engineering/computer-file-engineering-services-section": "0.4.0",
+    "@red-cup-engineering/json-schema-services-section": "0.3.0",
+    "@red-cup-engineering/json-services-section": "1.0.0",
+    "@red-cup-engineering/markdown-engineering-services-section": "0.5.0",
+    "@red-cup-engineering/markdown-vault-bundle-services-section": "0.1.0",
+    "@red-cup-engineering/uri-services-section": "0.1.0",
+    "@red-cup-engineering/web-theming-service": "0.0.4",
+    "@red-cup-engineering/witness-journal-document-service": "0.1.0",
+    "sharp": "0.35.4",
+    "@red-cup-engineering/signcell": "0.1.0",
+    "@red-cup-engineering/semiotic-eavt-services-section": "0.1.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

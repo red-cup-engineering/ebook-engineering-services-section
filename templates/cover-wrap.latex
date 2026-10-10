@@ -1,0 +1,58 @@
+% The house full-wrap paperback cover, set by scripts/produce-print-edition.mjs
+% (renderCoverWrapLatex fills the @@ fields; src/print-edition.mjs's coverWrap
+% gives the layout). One page, in inches from its top left: the back, the
+% spine and the front side by side, with the bleed on every outer edge.
+%
+% The front is the illustrated ebook cover (cover-illustrated.latex) at the
+% trim's scale: the same coordinates on its 1600 x 2560 raster and the same
+% type, with the illustration grown by the bleed and centred on the trim, so
+% it runs off the three outer edges. The spine, when the printer allows spine text, carries the title and
+% the byline, reading top to bottom. The back carries the series, the book's
+% description (unhyphenated, ragged right) and the byline on the cover's ground, the imprint at its foot,
+% and leaves clear the box, bottom right beside the spine, where the printer
+% puts the barcode.
+\documentclass{article}
+\usepackage[paperwidth=@@WIDTH@@in,paperheight=@@HEIGHT@@in,margin=0in]{geometry}
+\usepackage{fontspec}
+\usepackage{xcolor}
+\usepackage{tikz}
+\definecolor{ground}{HTML}{@@GROUND@@}
+\definecolor{ink}{HTML}{@@INK@@}
+\definecolor{witness}{HTML}{@@ACCENT@@}
+\pagecolor{ground}
+\newfontfamily\displayfont{@@DISPLAY@@}
+\newfontfamily\bylinefont{@@BYLINE@@}
+\newfontfamily\readingfont{@@READING@@}
+\newfontface\displayitalic@@DISPLAYITALIC@@
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\begin{document}
+\begin{tikzpicture}[x=1in, y=-1in, inner sep=0pt, outer sep=0pt]
+\useasboundingbox (0,0) rectangle (@@WIDTH@@,@@HEIGHT@@);
+% The front, from the spine's fold to the outer bleed.
+\begin{scope}
+\clip (@@FRONTX@@,0) rectangle (@@WIDTH@@,@@HEIGHT@@);
+\begin{scope}[shift={(@@FRONTX@@,@@BLEED@@)}, x=1in/256, y=-1in/256, scale=@@SCALE@@, transform shape]
+\node at (800,@@ARTCENTER@@) {\includegraphics[width=@@ARTWIDTH@@in]{@@ILLUSTRATION@@}};
+\node[anchor=base, text=ink] at (800,244) {\bylinefont@@BYLINEWEIGHT@@\fontsize{20.8125}{20.8125}\selectfont\addfontfeatures{LetterSpace=33.1}\kern-0.1655em@@AUTHOR@@\kern-0.1655em};
+\node[anchor=base, text=ink] at (800,544) {\displayfont@@DISPLAYWEIGHT@@\fontsize{112.5}{112.5}\selectfont @@TITLE@@};
+\fill[witness] (680,636) rectangle (920,644);
+\node[anchor=base, text=ink] at (800,729) {\displayitalic\fontsize{23.625}{23.625}\selectfont @@SUBTITLE@@};
+\end{scope}
+\end{scope}
+% The spine: the title, then the byline, centered across it.
+\node[rotate=-90, text=ink] at (@@SPINECENTER@@,@@MIDDLE@@) {\displayfont@@DISPLAYWEIGHT@@\fontsize{@@SPINESIZE@@}{@@SPINESIZE@@}\selectfont @@SPINETITLE@@\hspace{@@SPINEGAP@@in}{\bylinefont@@BYLINEWEIGHT@@\fontsize{@@SPINEBYLINESIZE@@}{@@SPINEBYLINESIZE@@}\selectfont\addfontfeatures{LetterSpace=20}@@SPINEAUTHOR@@}};
+% The back, within the trim's safe margin.
+\begin{scope}[shift={(@@BACKX@@,@@BLEED@@)}]
+\node[anchor=north west, text width=@@BACKTEXTWIDTH@@in, align=left, text=ink] at (@@BACKMARGIN@@,@@BACKTOP@@) {%
+{\bylinefont@@BYLINEWEIGHT@@\fontsize{8.5}{11}\selectfont\addfontfeatures{LetterSpace=20}@@SERIES@@\par}
+\vspace{0.22in}
+{\readingfont\fontsize{11}{15.5}\selectfont\hyphenpenalty=10000\exhyphenpenalty=10000 @@BLURB@@\par}
+\vspace{0.24in}
+{\color{witness}\rule{0.6in}{0.8pt}\par}
+\vspace{0.16in}
+{\bylinefont@@BYLINEWEIGHT@@\fontsize{9.5}{11}\selectfont\addfontfeatures{LetterSpace=20}@@AUTHOR@@\par}};
+\node[anchor=base west, text=ink] at (@@BACKMARGIN@@,@@IMPRINTBASE@@) {\displayitalic\fontsize{11}{11}\selectfont @@IMPRINT@@};
+\end{scope}
+\end{tikzpicture}
+\end{document}

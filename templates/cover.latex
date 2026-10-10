@@ -1,0 +1,45 @@
+% The house typographic cover, 6 x 9 in, set from the design tokens by
+% scripts/produce-ebook.mjs (renderCoverLatex fills the @@ fields). It follows
+% the 561 Group Design Bible: bone ground and ink type, the display family for
+% the title (bold only when the tokens' display weight is 600 or more, as the
+% PDF's title page sets it), the body family for the subtitle, the metadata family for the
+% foot lockup (the book's brand: the Group's numeral mark, or another brand's
+% name), one accent rule, and no imagery (the Bible refuses stock and
+% philanthropic imagery). A book's theme may center the cover and set its
+% ground and ink apart from the pages' paper, and a book may bring its own art:
+% a drawing in code, set between the subtitle and the foot.
+\documentclass{article}
+\usepackage[paperwidth=6in,paperheight=9in,margin=0.6in]{geometry}
+\usepackage{fontspec}
+\usepackage{xcolor}
+\usepackage{tikz}
+\definecolor{bone}{HTML}{@@BONE@@}
+\definecolor{ink}{HTML}{@@INK@@}
+\definecolor{witness}{HTML}{@@ACCENT@@}
+\pagecolor{bone}
+\newfontfamily\displayfont{@@DISPLAY@@}
+\newfontfamily\bodyfont{@@BODY@@}
+\newfontfamily\metafont{@@MONO@@}
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\begin{document}
+\color{ink}
+@@ALIGN@@
+\vspace*{0.35in}
+{\metafont\fontsize{9}{11}\selectfont\addfontfeatures{LetterSpace=18}@@SERIES@@\par}
+\vspace{0.2in}
+{\displayfont@@DISPLAYWEIGHT@@\fontsize{40}{42}\selectfont @@TITLE@@\par}
+\vspace{0.3in}
+{\color{witness}\rule{1.4in}{3pt}\par}
+\vspace{0.3in}
+{\bodyfont\fontsize{15}{20}\selectfont @@SUBTITLE@@\par}
+\vfill
+@@ART@@
+\vfill
+{\metafont\fontsize{10}{13}\selectfont\addfontfeatures{LetterSpace=18}@@AUTHOR@@\par}
+\vspace{0.12in}
+\rule{\linewidth}{4pt}\par
+\vspace{0.08in}
+{\displayfont@@DISPLAYWEIGHT@@\fontsize{22}{24}\selectfont @@FOOTMARK@@\par}
+{\metafont\fontsize{9}{11}\selectfont\addfontfeatures{LetterSpace=18}@@FOOTLABEL@@\par}
+\end{document}

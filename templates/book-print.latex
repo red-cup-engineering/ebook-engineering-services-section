@@ -1,0 +1,248 @@
+% The house print interior: book.latex's type and theme set for a printed,
+% bound book, by scripts/produce-print-edition.mjs. What differs from the screen
+% PDF: the trim as the page, with mirrored margins whose gutter grows with the
+% page count (the geometry variable, from src/print-edition.mjs); black ink
+% throughout, since the interior prints in black; no cover-like title page but
+% a book's front matter -- half title, title page, copyright page, contents --
+% with chapters opening on a recto and the folios starting at the first one;
+% and a printed page's breaking rules, below the geometry.
+\documentclass[$if(fontsize)$$fontsize$$else$11pt$endif$,twoside,openright]{book}
+
+\usepackage{amsmath,amssymb}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else
+  \usepackage{unicode-math} % also loads fontspec; bare fontspec breaks OMS/OMSb math symbols (e.g. \bowtie) at non-10pt class options under XeTeX/LuaTeX
+  \setmainfont{$if(fontfamily)$$fontfamily$$else$DejaVu Serif$endif$}[$mainfontoptions$] % Latin Modern Roman lacks glyphs for bare Unicode math/subscript symbols (e.g. σ ₖ ∆ ⊤ ⊥) that house manuscripts quote in running prose; DejaVu Serif covers them (checked fc-query/fontTools against U+03C3, U+2096, U+2206, U+22A4, U+22A5) with matching Bold/Italic/BoldItalic faces -- a $fontfamily$ override must carry the same four faces (see scripts/produce-ebook.mjs's assertFontFamilyInstalled)
+  \setmonofont{$if(monofont)$$monofont$$else$FreeMono$endif$} % Latin Modern Mono lacks glyphs for math/Greek code-span characters (e.g. ⟨ ⟩ φ σ ∩ ⊤ ≠) that house manuscripts quote verbatim
+  \usepackage{ucharclasses} % switches font only inside CJK Unicode blocks, leaving Latin/Greek/math prose in \setmainfont
+  \newfontfamily\cjkfont{WenQuanYi Zen Hei} % the CJK-capable font installed on this box (fc-list :lang=zh); covers the chapter glosses (e.g. 人单合一, 灰度管理)
+  \setTransitionsForCJK{\cjkfont}{\normalfont}
+$if(mathtextfont)$
+  % A body family without the Unicode math blocks (the Design Bible body
+  % family, Roboto Slab, lacks arrows, operators and sub/superscripts) hands
+  % those blocks to a family that has them, the way CJK goes to \cjkfont.
+  \newfontfamily\mathtextfont{$mathtextfont$}
+  \setTransitionsFor{MathematicalOperators}{\mathtextfont}{\normalfont}
+  \setTransitionsFor{SupplementalMathematicalOperators}{\mathtextfont}{\normalfont}
+  \setTransitionsFor{MiscellaneousMathematicalSymbolsA}{\mathtextfont}{\normalfont}
+  \setTransitionsFor{MiscellaneousMathematicalSymbolsB}{\mathtextfont}{\normalfont}
+  \setTransitionsFor{MiscellaneousTechnical}{\mathtextfont}{\normalfont}
+  \setTransitionsFor{SuperscriptsAndSubscripts}{\mathtextfont}{\normalfont}
+  \setTransitionsFor{Arrows}{\mathtextfont}{\normalfont}
+  \setTransitionsFor{LetterlikeSymbols}{\mathtextfont}{\normalfont}
+$endif$
+$if(displayfont)$
+  % Lining figures in display type, so a chapter number's 1 never reads as a capital I
+  % (a face such as EB Garamond defaults to old-style figures).
+  \newfontfamily\displayfont{$displayfont$}[Numbers=Lining]
+$endif$
+\fi
+\providecommand{\displayfont}{}
+$if(parskip)$
+% The Design Bible type-pairing rule: no first-line indent; paragraphs are
+% separated by space.
+\usepackage{parskip}
+$endif$
+
+\usepackage[$geometry$]{geometry}
+% A printed page breaks as a book's does. No line runs past the measure (the
+% outer margin is the printer's safety zone): a paragraph that cannot be set
+% within it loosens instead. No paragraph leaves one line alone at the foot or
+% the head of a page, and no page ends on a hyphen, so the page bottoms may
+% differ by a line. Hyphens do not stack on consecutive lines.
+\setlength{\emergencystretch}{3em}
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+\brokenpenalty=10000
+\doublehyphendemerits=100000
+\finalhyphendemerits=50000
+\raggedbottom
+$if(linestretch)$
+\usepackage{setspace}
+\setstretch{$linestretch$}
+$endif$
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+$if(csl-refs)$
+\newlength{\cslhangindent}
+\setlength{\cslhangindent}{1.5em}
+\newlength{\csllabelwidth}
+\setlength{\csllabelwidth}{3em}
+\newlength{\cslentryspacingunit} % times entry-spacing
+\setlength{\cslentryspacingunit}{\parskip}
+\newenvironment{CSLReferences}[2] % #1 hanging-indent, #2 entry spacing
+ {% don't indent paragraphs
+  \setlength{\parindent}{0pt}
+  % turn on hanging indent if param 1 is 1
+  \ifodd #1
+  \let\oldpar\par
+  \def\par{\hangindent=\cslhangindent\oldpar}
+  \fi
+  % set entry spacing
+  \setlength{\parskip}{#2\cslentryspacingunit}
+ }%
+ {}
+\usepackage{calc}
+\newcommand{\CSLBlock}[1]{#1\hfill\break}
+\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{#1}}
+\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{#1}\break}
+\newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
+$endif$
+$if(highlighting-macros)$
+$highlighting-macros$
+% Code blocks set a size smaller than the text and break a line too long for
+% the measure, with a mark at the break, instead of running into the margin.
+\usepackage{fvextra}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,commandchars=\\\{\},fontsize=\small}
+$endif$
+$if(tables)$
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+% The book-layout filter asks for room before a paragraph that
+% introduces a table, so the two stay on one page.
+\usepackage{needspace}
+$endif$
+\usepackage{hyperref}
+\usepackage{xurl} % long URLs in references break at any character instead of running into the margin
+\hypersetup{hidelinks, pdftitle={$title$}$if(author)$, pdfauthor={$for(author)$$author$$sep$; $endfor$}$endif$}
+
+% The interior prints in black ink: the theme's accent and ink are black here,
+% as a printer would convert them.
+\usepackage{xcolor}
+\usepackage{tikz}
+\definecolor{accentcolor}{gray}{0}
+\definecolor{inkcolor}{gray}{0}
+% Display type is bold unless design tokens set a lighter display weight; a book without
+% tokens keeps the bold it always had.
+$if(inkcolor)$
+$if(displaybold)$
+\newcommand{\displayweight}{\bfseries}
+$else$
+\newcommand{\displayweight}{}
+$endif$
+$else$
+\newcommand{\displayweight}{\bfseries}
+$endif$
+
+% The book's theme (the "book" block of the design tokens' org.561.group extension, read by
+% src/ebook-production.mjs's designTokenStyle), as book.latex sets it.
+$if(scenebreak)$
+% A scene break: the theme's mark centered between scenes, the next paragraph flush.
+% The mark stays on the page with the scene it opens.
+\makeatletter
+\newcommand{\scenebreak}{\par\bigskip{\centering $scenebreakmark$\par}\nopagebreak\bigskip\@afterindentfalse\@afterheading}
+\makeatother
+$endif$
+$if(dropcaps)$
+% A compact, dependency-free dropped initial for a themed chapter's first prose paragraph.
+\newcommand{\bookdropcap}[1]{\leavevmode\raisebox{-0.16\baselineskip}{\fontsize{34}{34}\selectfont\displayfont #1}\hspace{0.08em}}
+$endif$
+
+\usepackage{titlesec}
+\titleformat{\chapter}[display]
+  {\normalfont\displayfont\displayweight\color{inkcolor}$if(chaptercenter)$\filcenter$endif$}
+  {$if(chapternolabel)$$else$$if(chaptercenter)$\filcenter$else$\filright$endif$\Large\textcolor{accentcolor}{$if(chapternumberlabel)$\thechapter$else$\chaptertitlename\ \thechapter$endif$}$endif$}
+  {$if(chapternolabel)$0pt$else$6pt$endif$}
+  {\Huge$if(chapterdisplayweight)$$else$\bfseries$endif$}
+\titlespacing*{\chapter}{0pt}{0pt}{30pt}
+% The contents give a chapter number room for two digits (the book class allows 1.5em),
+% so chapter titles align whether a book has nine chapters or twelve.
+\makeatletter
+\renewcommand*\l@chapter[2]{\ifnum \c@tocdepth >\m@ne \addpenalty{-\@highpenalty}\vskip 1.0em \@plus\p@
+  \setlength\@tempdima{2.2em}\begingroup \parindent \z@ \rightskip \@pnumwidth \parfillskip -\@pnumwidth
+  \leavevmode \bfseries \advance\leftskip\@tempdima \hskip -\leftskip #1\nobreak\hfil
+  \nobreak\hb@xt@\@pnumwidth{\hss #2\kern -\p@\kern \p@}\par \penalty\@highpenalty \endgroup \fi}
+\makeatother
+$if(displayfont)$
+\titleformat*{\section}{\normalfont\displayfont\Large\displayweight\color{inkcolor}}
+\titleformat*{\subsection}{\normalfont\displayfont\large\displayweight\color{inkcolor}}
+$endif$
+
+\usepackage{fancyhdr}
+% A blank verso left by a recto opening carries no running head or folio.
+\usepackage{emptypage}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[LE]{\normalfont$if(runningheadsmallcaps)$\scshape$else$\itshape$endif$ $title$}
+\fancyhead[RO]{\normalfont$if(runningheadsmallcaps)$\scshape$else$\itshape$endif$\rightmark}
+$if(chapterrunninghead)$
+% A book without sections (a novel) carries its chapter's title on the recto.
+\renewcommand{\chaptermark}[1]{\markboth{#1}{#1}}
+$endif$
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{accentcolor}\leaders\hrule height \headrulewidth\hfill}}
+\fancypagestyle{plain}{%
+  \fancyhf{}
+  \fancyfoot[C]{\thepage}
+  \renewcommand{\headrulewidth}{0pt}
+}
+
+\begin{document}
+
+\frontmatter
+\pagestyle{empty}
+% Half title (i).
+\vspace*{1.9in}
+\begin{center}
+{\displayfont\displayweight\fontsize{20}{24}\selectfont $title$\par}
+\end{center}
+\cleardoublepage
+
+% Title page (iii): the title, subtitle and author, and the imprint at the foot.
+\vspace*{1.1in}
+\begin{center}
+{\displayfont\displayweight\fontsize{30}{34}\selectfont\hyphenpenalty=10000 $title$\par}
+$if(subtitle)$
+\vspace{0.22in}
+{\large\itshape\hyphenpenalty=10000 $subtitle$\par}
+$endif$
+\vspace{0.3in}
+\rule{0.6in}{0.4pt}\par
+\vspace{0.3in}
+$if(author)$
+{\large $for(author)$$author$$sep$ \& $endfor$\par}
+$endif$
+\vfill
+$if(imprint)$
+{\itshape $imprint$\par}
+$endif$
+\end{center}
+\newpage
+
+% Copyright page (iv), generated from the book's rights.
+\vspace*{\fill}
+\noindent
+{\footnotesize\raggedright\setlength{\parindent}{0pt}\setlength{\parskip}{0.6em}
+$copyright-page$
+\par}
+
+$if(nocontents)$$else$
+% The contents carry their roman folios on every page. The plain style
+% clears fancyhdr's heads as it is set, so it is set only inside this group,
+% which ends after the contents' last page has shipped.
+\cleardoublepage
+\begingroup
+\pagestyle{plain}
+\tableofcontents
+\cleardoublepage
+\endgroup
+$endif$
+
+\mainmatter
+\pagestyle{fancy}
+$body$
+
+\end{document}
