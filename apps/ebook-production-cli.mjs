@@ -15,6 +15,8 @@ const HELP = `usage: ebook-production-cli --manifest <path.json>
 
 --manifest <path>  a single manifest JSON file, or a directory of them
                    (batch mode: every *.json file in the directory)
+--tokens <path>    use this design-token file instead of the manifest path
+--dist <path>      write artifacts here instead of the manifest destination
 --help             print this message
 `;
 
@@ -22,36 +24,45 @@ const HELP = `usage: ebook-production-cli --manifest <path.json>
  * @param {string} dirPath
  * @returns {object[]} parsed manifest objects from every *.json file, sorted by filename
  */
-export function readManifest(manifestPath) {
+export function readManifest(manifestPath, { tokens, distDir } = {}) {
   const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
   for (const key of ["bookDir", "distDir", "template", "css", "tokens", "coverArt"]) {
     if (manifest[key]) manifest[key] = resolve(dirname(resolve(manifestPath)), manifest[key]);
   }
   if (Array.isArray(manifest.assets)) manifest.assets = manifest.assets.map((asset) => ({ ...asset, path: resolve(dirname(resolve(manifestPath)), asset.path) }));
+  if (tokens !== undefined) manifest.tokens = resolve(tokens);
+  if (distDir !== undefined) manifest.distDir = resolve(distDir);
   return manifest;
 }
 
-function readManifestDirectory(dirPath) {
+function readManifestDirectory(dirPath, overrides) {
   return readdirSync(dirPath)
     .filter((name) => name.endsWith(".json"))
     .sort()
-    .map((name) => readManifest(join(dirPath, name)));
+    .map((name) => readManifest(join(dirPath, name), overrides));
 }
 
 /**
  * Parse argv into a CLI action.
  * @param {string[]} argv
- * @returns {{help: boolean, manifestPath: (string|undefined)}}
+ * @returns {{help: boolean, manifestPath: (string|undefined), tokens: (string|undefined), distDir: (string|undefined)}}
  */
 export function parseArgs(argv) {
   const help = argv.includes("--help") || argv.includes("-h");
   const flagIndex = argv.indexOf("--manifest");
   const manifestPath = flagIndex >= 0 ? argv[flagIndex + 1] : undefined;
-  return { help, manifestPath };
+  const option = (flag) => {
+    const index = argv.indexOf(flag);
+    if (index < 0) return undefined;
+    const value = argv[index + 1];
+    if (!value || value.startsWith("--")) throw new Error(`${flag} requires a path`);
+    return value;
+  };
+  return { help, manifestPath, tokens: option("--tokens"), distDir: option("--dist") };
 }
 
 async function main() {
-  const { help, manifestPath } = parseArgs(process.argv.slice(2));
+  const { help, manifestPath, tokens, distDir } = parseArgs(process.argv.slice(2));
   if (help || !manifestPath) {
     console.log(HELP);
     process.exitCode = help ? 0 : 1;
@@ -62,7 +73,7 @@ async function main() {
   const isDirectory = statSync(resolved).isDirectory();
 
   if (isDirectory) {
-    const manifests = readManifestDirectory(resolved);
+    const manifests = readManifestDirectory(resolved, { tokens, distDir });
     const { produceSetOfEbooks } = await import("../scripts/produce-set-of-ebooks.mjs");
     const { results, failures } = await produceSetOfEbooks(manifests);
     console.log(JSON.stringify({ results, failures }, null, 2));
@@ -70,7 +81,7 @@ async function main() {
     return;
   }
 
-  const manifest = readManifest(resolved);
+  const manifest = readManifest(resolved, { tokens, distDir });
   try {
     const { produceEbook } = await import("../scripts/produce-ebook.mjs");
     const record = await produceEbook(manifest);
