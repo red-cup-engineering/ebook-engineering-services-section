@@ -269,6 +269,24 @@ artifact storage/serving before it can accept customer bytes.
 
 Manifest paths (`bookDir`, `distDir`, `template`, and `css`) are resolved relative to the JSON manifest, independently of the calling directory. Public education supplies these manifests and manuscripts; it contains no ebook build program.
 
+Installed source/resource compositions use the same CLI with explicit path
+parameters, without rewriting the authored edition manifest:
+
+```sh
+ebook-production-cli --manifest path/to/ebook.json \
+  --tokens /admitted/resources/house.tokens.json \
+  --dist /writable/staging/book
+```
+
+`--tokens` and `--dist` override only the existing manifest `tokens` and
+`distDir` fields. Relative override paths resolve from the caller's working
+directory; authored source paths still resolve beside the manifest. Batch
+mode applies the supplied resource and output directory to each manifest.
+The caller must supply an admitted design resource and a writable staging
+directory. Rendering does not accept an edition or update its prior proof,
+acceptance, release pointer or retailer listing.
+
+
 ## Book themes
 
 Every book can look like itself. A book's look comes from the design tokens its manifest

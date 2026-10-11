@@ -16,7 +16,7 @@ import {
 import { designTokenStyle, listChapters, normalizeAssets, sha256File, sha256SourceHash } from "./ebook-production.mjs";
 import { produceEbook } from "../scripts/produce-ebook.mjs";
 import { sha256Hex } from "@red-cup-engineering/cryptographic-computer-data-engineering-services-section/integrity";
-import { semanticId } from "@red-cup-engineering/computer-content-engineering-services-section/semiotic-content-address";
+import { semanticId } from "@red-cup-engineering/computer-content-address-engineering-services-section/semiotic-content-address";
 import { isNiUri } from "@red-cup-engineering/uri-services-section/ni-uri";
 
 const SECTION_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
