@@ -8,6 +8,7 @@
 import { readFileSync, readdirSync, realpathSync, statSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { parseArgs as parseNodeArgs } from "node:util";
 
 const HELP = `usage: ebook-production-cli --manifest <path.json>
        ebook-production-cli --manifest <dir-of-manifest.json>
@@ -48,17 +49,17 @@ function readManifestDirectory(dirPath, overrides) {
  * @returns {{help: boolean, manifestPath: (string|undefined), tokens: (string|undefined), distDir: (string|undefined)}}
  */
 export function parseArgs(argv) {
-  const help = argv.includes("--help") || argv.includes("-h");
-  const flagIndex = argv.indexOf("--manifest");
-  const manifestPath = flagIndex >= 0 ? argv[flagIndex + 1] : undefined;
-  const option = (flag) => {
-    const index = argv.indexOf(flag);
-    if (index < 0) return undefined;
-    const value = argv[index + 1];
-    if (!value || value.startsWith("--")) throw new Error(`${flag} requires a path`);
-    return value;
-  };
-  return { help, manifestPath, tokens: option("--tokens"), distDir: option("--dist") };
+  const { values } = parseNodeArgs({
+    args: argv,
+    options: {
+      help: { type: "boolean", short: "h" },
+      manifest: { type: "string" },
+      tokens: { type: "string" },
+      dist: { type: "string" },
+    },
+    allowPositionals: false,
+  });
+  return { help: Boolean(values.help), manifestPath: values.manifest, tokens: values.tokens, distDir: values.dist };
 }
 
 async function main() {
@@ -94,7 +95,12 @@ async function main() {
 
 // Package managers expose bin entries through symlinks. Compare filesystem
 // identities rather than a hand-built URL, which also loses escaped characters.
-if (process.argv[1] && realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url))) {
+function isMain() {
+  if (!process.argv[1]) return false;
+  try { return realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url)); }
+  catch (error) { if (error.code === "ENOENT") return false; throw error; }
+}
+if (isMain()) {
   main().catch((error) => {
     console.error(error);
     process.exitCode = 1;
