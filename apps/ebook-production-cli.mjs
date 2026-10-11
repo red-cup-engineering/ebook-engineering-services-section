@@ -5,10 +5,9 @@
  * from the command line, printing the resulting build record(s) as JSON.
  */
 
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { readFileSync, readdirSync, realpathSync, statSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import { produceEbook } from "../scripts/produce-ebook.mjs";
-import { produceSetOfEbooks } from "../scripts/produce-set-of-ebooks.mjs";
+import { fileURLToPath } from "node:url";
 
 const HELP = `usage: ebook-production-cli --manifest <path.json>
        ebook-production-cli --manifest <dir-of-manifest.json>
@@ -64,6 +63,7 @@ async function main() {
 
   if (isDirectory) {
     const manifests = readManifestDirectory(resolved);
+    const { produceSetOfEbooks } = await import("../scripts/produce-set-of-ebooks.mjs");
     const { results, failures } = await produceSetOfEbooks(manifests);
     console.log(JSON.stringify({ results, failures }, null, 2));
     process.exitCode = failures.length > 0 ? 1 : 0;
@@ -72,6 +72,7 @@ async function main() {
 
   const manifest = readManifest(resolved);
   try {
+    const { produceEbook } = await import("../scripts/produce-ebook.mjs");
     const record = await produceEbook(manifest);
     console.log(JSON.stringify(record, null, 2));
   } catch (error) {
@@ -80,7 +81,9 @@ async function main() {
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+// Package managers expose bin entries through symlinks. Compare filesystem
+// identities rather than a hand-built URL, which also loses escaped characters.
+if (process.argv[1] && realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url))) {
   main().catch((error) => {
     console.error(error);
     process.exitCode = 1;
