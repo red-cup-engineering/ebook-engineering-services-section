@@ -63,7 +63,9 @@ test("resource and output overrides compose an immutable manuscript with externa
     assert.equal(manifest.cover, "typographic");
     assert.equal(readManifest(file).tokens, resolve(root, authored.tokens));
     assert.equal(readManifest(file).distDir, resolve(root, authored.distDir));
-    assert.throws(() => parseArgs(["--tokens"]), /--tokens requires a path/);
-    assert.throws(() => parseArgs(["--dist", "--manifest", file]), /--dist requires a path/);
+    assert.throws(() => parseArgs(["--tokens"]), { code: "ERR_PARSE_ARGS_INVALID_OPTION_VALUE" });
+    assert.throws(() => parseArgs(["--dist", "--manifest", file]), { code: "ERR_PARSE_ARGS_INVALID_OPTION_VALUE" });
+    assert.throws(() => parseArgs(["--unknown"]), { code: "ERR_PARSE_ARGS_UNKNOWN_OPTION" });
+    assert.throws(() => parseArgs(["unexpected-positional"]), { code: "ERR_PARSE_ARGS_UNEXPECTED_POSITIONAL" });
   } finally { rmSync(root, { recursive: true, force: true }); }
 });
