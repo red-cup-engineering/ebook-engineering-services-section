@@ -4,7 +4,7 @@ import { createHash, sign as signBytes, verify as verifyBytes } from "node:crypt
 import { basename, dirname, join, posix, resolve } from "node:path";
 import { tmpdir } from "node:os";
 import { defineSchemaType } from "@red-cup-engineering/computer-data-engineering-services-section/type-system/schema-type";
-import { createTypedMark } from "@red-cup-engineering/signcell/typed-mark";
+import { admitTypedMark, createTypedMark } from "@red-cup-engineering/signcell/typed-mark";
 
 const MAX_COVER_BYTES = 50 * 1024 * 1024;
 const IDEAL_WIDTH = 1600;
@@ -222,6 +222,9 @@ export function acceptKindleRelease({ book, fabrication, editorialAcceptance, va
     if (typeof digest !== "string" || digest.length === 0 || editorialAcceptance.artifacts?.[kind]?.sha256 !== digest) throw new TypeError(`editorial acceptance names different ${kind} bytes from the fabrication`);
   }
   if (validation?.type !== kindleValidationReceiptType.id || validation.content?.passed !== true || validation.content?.book !== book) throw new TypeError("Kindle release acceptance requires a passing validation SignCell for this book");
+  const admittedValidation = admitTypedMark(kindleValidationReceiptType, validation);
+  if (!admittedValidation.ok) throw new TypeError("Kindle release acceptance requires an intact validation SignCell");
+  validation = admittedValidation.value;
   const built = niSha256Hex(fabrication.artifacts?.epub?.sha256), observed = validation.content.artifacts.epub.sha256;
   if (!built || built !== observed) throw new TypeError("validation evidence names different EPUB bytes from the fabrication");
   const release = validation.content.checks.conformance.release, accessibility = validation.content.checks.accessibility;
