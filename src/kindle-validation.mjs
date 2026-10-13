@@ -214,6 +214,13 @@ function niSha256Hex(value) {
 export function acceptKindleRelease({ book, fabrication, editorialAcceptance, validation }) {
   if (fabrication?.type !== "EbookEditionFabricationResult" || fabrication.status !== "fabricated-awaiting-acceptance") throw new TypeError("Kindle release acceptance requires the fabrication record");
   if (editorialAcceptance?.type !== "EbookEditionAcceptance" || !["accepted", "partially-accepted"].includes(editorialAcceptance.status) || !editorialAcceptance.closedObligationIds?.includes("editorial-proof")) throw new TypeError("Kindle release acceptance requires closed editorial proof");
+  // Editorial proof is for one exact input and both artifacts of that edition.
+  const editionInputDigest = fabrication.specification?.projections?.[0]?.configuration?.editionInputDigest;
+  if (typeof editionInputDigest !== "string" || editionInputDigest.length === 0 || editorialAcceptance.editionInputDigest !== editionInputDigest) throw new TypeError("editorial acceptance names a different edition input digest from the fabrication");
+  for (const kind of ["epub", "screenPdf"]) {
+    const digest = fabrication.artifacts?.[kind]?.sha256;
+    if (typeof digest !== "string" || digest.length === 0 || editorialAcceptance.artifacts?.[kind]?.sha256 !== digest) throw new TypeError(`editorial acceptance names different ${kind} bytes from the fabrication`);
+  }
   if (validation?.type !== kindleValidationReceiptType.id || validation.content?.passed !== true || validation.content?.book !== book) throw new TypeError("Kindle release acceptance requires a passing validation SignCell for this book");
   const built = niSha256Hex(fabrication.artifacts?.epub?.sha256), observed = validation.content.artifacts.epub.sha256;
   if (!built || built !== observed) throw new TypeError("validation evidence names different EPUB bytes from the fabrication");
@@ -222,7 +229,7 @@ export function acceptKindleRelease({ book, fabrication, editorialAcceptance, va
   if (accessibility?.type !== "EpubAccessibilityEvidence") throw new TypeError("accessibility evidence is absent");
   const content = {
     type: "KindleReleaseAcceptance", version: 1, status: "release-ready", book,
-    editionInputDigest: editorialAcceptance.editionInputDigest,
+    editionInputDigest,
     rendition: { kind: "EPUB", artifactSha256: observed },
     closedObligationIds: ["editorial-proof", "epub-conformance", "accessibility-assessment"],
     evidence: { editorialProof: editorialAcceptance.proof?.digest ?? null, validation: validation.id, conformanceReport: release.report.sha256, accessibilityConformanceClaim: accessibility.conformsTo },
