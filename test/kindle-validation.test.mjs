@@ -1,4 +1,5 @@
 import test from "node:test";
+import { acceptEbookEdition } from "../src/accept-ebook-edition.mjs";
 import assert from "node:assert/strict";
 import { generateKeyPairSync } from "node:crypto";
 import { mkdtemp, writeFile } from "node:fs/promises";
@@ -11,7 +12,7 @@ const reflowable = Object.freeze({
   navigation: Object.freeze({ type: "EpubNavigationAssay", version: 1, passed: true, checks: {}, findings: {} }),
 });
 
-test("exact EPUB and KDP cover bytes produce a signed publication-gate SignCell", async () => {
+test("exact EPUB and KDP cover bytes produce a signed publication-gate SignCell", async (t) => {
   const directory = await mkdtemp(join(tmpdir(), "kindle-validation-"));
   const epubPath = join(directory, "book.epub"), coverPath = join(directory, "cover.jpg");
   await writeFile(epubPath, "fixture epub"); await writeFile(coverPath, "fixture cover");
@@ -30,7 +31,45 @@ test("exact EPUB and KDP cover bytes produce a signed publication-gate SignCell"
   const signed = signKindleValidationReceipt(cell, privateKey, "fixture-key");
   assert.equal(verifyKindleValidationReceipt(signed, publicKey), true);
   const epubNi = `ni:///sha-256;${Buffer.from(cell.content.artifacts.epub.sha256, "hex").toString("base64url")}`;
-  const release = acceptKindleRelease({ book: "fixture", fabrication: { type: "EbookEditionFabricationResult", status: "fabricated-awaiting-acceptance", artifacts: { epub: { sha256: epubNi } } }, editorialAcceptance: { type: "EbookEditionAcceptance", status: "partially-accepted", editionInputDigest: "ni:///sha-256;fixture", closedObligationIds: ["editorial-proof"], proof: { digest: "ni:///sha-256;proof" } }, validation: cell });
+  const editionInputDigest = "ni:///sha-256;fixture";
+  const fabrication = {
+    type: "EbookEditionFabricationResult", status: "fabricated-awaiting-acceptance",
+    specification: { projections: [{ configuration: { editionInputDigest } }] },
+    artifacts: { epub: { sha256: epubNi }, screenPdf: { sha256: "ni:///sha-256;screen-pdf" } },
+    pendingAcceptanceObligationIds: ["editorial-proof", "epub-conformance"],
+  };
+  const editorialAcceptance = acceptEbookEdition(fabrication, {
+    type: "EbookEditionProof", version: 1, editionInputDigest,
+    artifacts: { epub: epubNi, screenPdf: fabrication.artifacts.screenPdf.sha256 },
+    proofer: "fixture-reader", writer: "fixture-writer", findings: [],
+    provedAt: "2026-09-29T00:00:00.000Z", method: "synthetic fixture",
+  });
+  assert.equal(editorialAcceptance.status, "partially-accepted");
+  const releaseInput = { book: "fixture", fabrication, editorialAcceptance, validation: cell };
+  const release = acceptKindleRelease(releaseInput);
+  assert.equal(release.content.editionInputDigest, editionInputDigest);
+  await t.test("rejects another edition's editorial proof", () => {
+    assert.throws(() => acceptKindleRelease({ ...releaseInput, editorialAcceptance: { ...editorialAcceptance, editionInputDigest: "ni:///sha-256;another-edition" } }), /different edition input digest/);
+  });
+  await t.test("rejects fabrication without an edition input digest", () => {
+    assert.throws(() => acceptKindleRelease({ ...releaseInput, fabrication: { ...fabrication, specification: {} } }), /different edition input digest/);
+  });
+  for (const kind of ["epub", "screenPdf"]) {
+    const changedArtifacts = { ...editorialAcceptance.artifacts, [kind]: { sha256: "ni:///sha-256;another-build" } };
+    await t.test(`rejects editorial proof of different ${kind} bytes`, () => {
+      assert.throws(() => acceptKindleRelease({ ...releaseInput, editorialAcceptance: { ...editorialAcceptance, artifacts: changedArtifacts } }), new RegExp(`different ${kind} bytes`));
+    });
+    const missingArtifacts = { ...editorialAcceptance.artifacts };
+    delete missingArtifacts[kind];
+    await t.test(`rejects editorial acceptance without ${kind} bytes`, () => {
+      assert.throws(() => acceptKindleRelease({ ...releaseInput, editorialAcceptance: { ...editorialAcceptance, artifacts: missingArtifacts } }), new RegExp(`different ${kind} bytes`));
+    });
+    const missingBoth = { ...fabrication.artifacts };
+    delete missingBoth[kind];
+    await t.test(`rejects ${kind} missing from both records`, () => {
+      assert.throws(() => acceptKindleRelease({ ...releaseInput, fabrication: { ...fabrication, artifacts: missingBoth }, editorialAcceptance: { ...editorialAcceptance, artifacts: missingBoth } }), new RegExp(`different ${kind} bytes`));
+    });
+  }
   assert.equal(release.content.status, "release-ready");
   assert.equal(release.content.evidence.accessibilityConformanceClaim, null);
   const tampered = { ...signed, cell: { ...signed.cell, content: { ...signed.cell.content, book: "another-book" } } };
