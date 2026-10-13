@@ -48,6 +48,22 @@ test("exact EPUB and KDP cover bytes produce a signed publication-gate SignCell"
   const releaseInput = { book: "fixture", fabrication, editorialAcceptance, validation: cell };
   const release = acceptKindleRelease(releaseInput);
   assert.equal(release.content.editionInputDigest, editionInputDigest);
+  assert.equal(release.content.evidence.validation, cell.id);
+  assert.equal(Object.hasOwn(cell, "signature"), false, "an unsigned admitted mark remains eligible");
+  await t.test("rejects a forged validation identity", () => {
+    assert.throws(() => acceptKindleRelease({ ...releaseInput, validation: { ...cell, id: "ni:///sha-256;tampered" } }), /intact validation SignCell/);
+  });
+  await t.test("rejects changed validation content with its old identity", () => {
+    const changed = { ...cell, content: { ...cell.content, validatedAt: "2026-09-30T00:00:00.000Z" } };
+    assert.throws(() => acceptKindleRelease({ ...releaseInput, validation: changed }), /intact validation SignCell/);
+  });
+  await t.test("rejects a validation with the wrong carrier kind", () => {
+    assert.throws(() => acceptKindleRelease({ ...releaseInput, validation: { ...cell, kind: "not-a-sign-cell" } }), /intact validation SignCell/);
+  });
+  await t.test("rejects a validation without an advertised identity", () => {
+    const { id, ...unaddressed } = cell;
+    assert.throws(() => acceptKindleRelease({ ...releaseInput, validation: unaddressed }), /intact validation SignCell/);
+  });
   await t.test("rejects another edition's editorial proof", () => {
     assert.throws(() => acceptKindleRelease({ ...releaseInput, editorialAcceptance: { ...editorialAcceptance, editionInputDigest: "ni:///sha-256;another-edition" } }), /different edition input digest/);
   });
