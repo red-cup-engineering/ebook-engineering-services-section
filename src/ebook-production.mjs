@@ -9,7 +9,7 @@
 import { createHash } from "node:crypto";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { readMarkdownFrontmatter } from "@red-cup-engineering/markdown-engineering-services-section/read-markdown-frontmatter";
+import { readMarkdownFrontmatter } from "@red-cup-engineering/read-markdown-frontmatter-service";
 import { makeNiUri } from "@red-cup-engineering/uri-services-section/ni-uri";
 import { canonicalJson } from "@red-cup-engineering/json-services-section/canonical-json";
 import { cssFontFamilyList, designTokenColor, designTokenFontStack, designTokenValue, hasDesignToken } from "@red-cup-engineering/web-theming-service/design-tokens";

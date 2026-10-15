@@ -46,7 +46,7 @@
  * - knowledge (□_K): every secret one character keeps from another is
  *   revealed exactly once, in a numbered chapter.
  */
-import { readMarkdownFrontmatter } from "@red-cup-engineering/markdown-engineering-services-section/read-markdown-frontmatter";
+import { readMarkdownFrontmatter } from "@red-cup-engineering/read-markdown-frontmatter-service";
 import { projectMarkdownBlocks } from "@red-cup-engineering/markdown-engineering-services-section/project-markdown-blocks";
 
 const CITATION = /\[(?:[^\]]*?)@([A-Za-z0-9_:.#$%&+?<>~/-]+)[^\]]*\]/gu;

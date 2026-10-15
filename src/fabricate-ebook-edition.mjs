@@ -1,6 +1,6 @@
-import { readMarkdownSource } from "@red-cup-engineering/markdown-engineering-services-section/read-markdown-structure";
-import { projectMarkdownFeatures } from "@red-cup-engineering/markdown-engineering-services-section/read-markdown-features";
-import { readMarkdownFrontmatter } from "@red-cup-engineering/markdown-engineering-services-section/read-markdown-frontmatter";
+import { readMarkdownSource } from "@red-cup-engineering/read-markdown-structure-service";
+import { projectMarkdownFeatures } from "@red-cup-engineering/read-markdown-features-service";
+import { readMarkdownFrontmatter } from "@red-cup-engineering/read-markdown-frontmatter-service";
 /**
  * Admit a digest-bound edition specification, render its EPUB and screen PDF,
  * and return only the realization evidence that the renderer actually made.

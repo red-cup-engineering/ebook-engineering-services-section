@@ -57,7 +57,10 @@
     "@red-cup-engineering/uri-services-section": "workspace:*",
     "@red-cup-engineering/web-theming-service": "workspace:*",
     "@red-cup-engineering/witness-journal-document-service": "workspace:*",
-    "sharp": "0.35.5"
+    "sharp": "0.35.5",
+    "@red-cup-engineering/read-markdown-structure-service": "0.2.0",
+    "@red-cup-engineering/read-markdown-features-service": "0.2.0",
+    "@red-cup-engineering/read-markdown-frontmatter-service": "0.2.0"
   },
   "engines": {
     "node": ">=20"

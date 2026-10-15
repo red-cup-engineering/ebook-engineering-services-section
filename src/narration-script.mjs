@@ -1,6 +1,6 @@
 /** Pure projection of an ordered Markdown manuscript into a sound-score narration layer. */
 import { createHash } from "node:crypto";
-import { readMarkdownFrontmatter } from "@red-cup-engineering/markdown-engineering-services-section/read-markdown-frontmatter";
+import { readMarkdownFrontmatter } from "@red-cup-engineering/read-markdown-frontmatter-service";
 
 const digest = (value) => `ni:///sha-256;${createHash("sha256").update(value).digest("base64url")}`;
 const canonical = (value) => JSON.stringify(value);
