@@ -4,7 +4,7 @@ import { chmod, copyFile, mkdir, mkdtemp, readFile, rm, utimes, writeFile } from
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { promisify } from "node:util";
-import { defineSchemaType } from "@red-cup-engineering/computer-data-engineering-services-section/type-system/schema-type";
+import { defineSchemaType } from "@red-cup-engineering/signcell/type-system/schema-type";
 import { createTypedMark } from "@red-cup-engineering/signcell/typed-mark";
 
 const exec = promisify(execFile);

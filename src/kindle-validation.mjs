@@ -3,7 +3,7 @@ import { spawn } from "node:child_process";
 import { createHash, sign as signBytes, verify as verifyBytes } from "node:crypto";
 import { basename, dirname, join, posix, resolve } from "node:path";
 import { tmpdir } from "node:os";
-import { defineSchemaType } from "@red-cup-engineering/computer-data-engineering-services-section/type-system/schema-type";
+import { defineSchemaType } from "@red-cup-engineering/signcell/type-system/schema-type";
 import { admitTypedMark, createTypedMark } from "@red-cup-engineering/signcell/typed-mark";
 
 const MAX_COVER_BYTES = 50 * 1024 * 1024;

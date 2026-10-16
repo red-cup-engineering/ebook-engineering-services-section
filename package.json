@@ -1,6 +1,6 @@
 {
   "name": "@red-cup-engineering/ebook-engineering-services-section",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "type": "module",
   "description": "Multi-chapter book assembly and a hash-verified deterministic build record; the invocation contract, not the program. Cover art generation calls an inference application and is not this substrate section's concern.",
   "license": "UNLICENSED",
@@ -49,18 +49,18 @@
     "@red-cup-engineering/computer-data-engineering-services-section": "0.2.0",
     "@red-cup-engineering/computer-file-engineering-services-section": "0.4.0",
     "@red-cup-engineering/computer-filepath-engineering-services-section": "0.1.0",
-    "@red-cup-engineering/computer-inference-engine": "0.1.0",
     "@red-cup-engineering/computer-text-content-engineering-services-section": "0.1.0",
     "@red-cup-engineering/cryptographic-computer-data-engineering-services-section": "0.3.1",
     "@red-cup-engineering/json-schema-services-section": "0.5.0",
     "@red-cup-engineering/json-services-section": "0.4.0",
-    "@red-cup-engineering/markdown-engineering-services-section": "0.5.1",
-    "@red-cup-engineering/markdown-vault-bundle-services-section": "0.1.1",
     "@red-cup-engineering/semiotic-eavt-services-section": "0.1.0",
-    "@red-cup-engineering/signcell": "0.1.0",
+    "@red-cup-engineering/signcell": "0.2.0",
     "@red-cup-engineering/uri-services-section": "0.1.1",
-    "@red-cup-engineering/web-theming-service": "0.0.5",
-    "@red-cup-engineering/witness-journal-document-service": "0.1.1"
+    "@red-cup-engineering/markdown-engineering-services-section": "0.5.2",
+    "@red-cup-engineering/markdown-vault-bundle-services-section": "0.1.2",
+    "@red-cup-engineering/web-theming-service": "0.0.6",
+    "@red-cup-engineering/witness-journal-document-service": "0.1.2",
+    "@red-cup-engineering/computer-inference-engine": "0.1.2"
   },
   "engines": {
     "node": ">=20"
