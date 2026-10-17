@@ -201,7 +201,6 @@ function verifiedArtifact(artifact) {
  * @returns {Promise<object>} a refused, failed, or fabricated-awaiting-acceptance result
  */
 export async function fabricateEbookEdition(specificationCandidate, source, { renderer } = {}) {
-  if (typeof renderer !== "function") throw new TypeError("ebook fabrication requires a host-provided renderer from Systems publishing");
   const specification = admittedSpecification(specificationCandidate);
   if (specification.status === "refused") return specification;
 
@@ -230,6 +229,7 @@ export async function fabricateEbookEdition(specificationCandidate, source, { re
     return refused(plan.code, plan.message, { specification, refusal: plan });
   }
 
+  if(typeof renderer!=="function") return refused("RENDERER_REQUIRED", "Systems publishing must supply the rendition renderer.", {specification, plan});
   let record;
   try {
     record = await renderer({

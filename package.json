@@ -1,6 +1,6 @@
 {
   "name": "@red-cup-engineering/ebook-engineering-services-section",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "type": "module",
   "description": "Ebook manifest, source identity, edition admission and acceptance algebra with Data-owned templates; host-provided Systems renders renditions.",
   "license": "UNLICENSED",
@@ -60,8 +60,7 @@
     "@red-cup-engineering/markdown-engineering-services-section": "0.5.2",
     "@red-cup-engineering/markdown-vault-bundle-services-section": "0.1.2",
     "@red-cup-engineering/web-theming-service": "0.0.6",
-    "@red-cup-engineering/witness-journal-document-service": "0.1.2",
-    "@red-cup-engineering/computer-inference-engine": "0.1.2"
+    "@red-cup-engineering/witness-journal-document-service": "0.1.2"
   },
   "engines": {
     "node": ">=20"
