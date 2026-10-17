@@ -14,7 +14,6 @@ import {
   admitArtifactFabricationSpecification,
 } from "@red-cup-engineering/computer-data-engineering-services-section/artifact-fabrication";
 import { designTokenStyle, listChapters, normalizeAssets, sha256File, sha256SourceHash } from "./ebook-production.mjs";
-import { produceEbook } from "../scripts/produce-ebook.mjs";
 import { sha256Hex } from "@red-cup-engineering/cryptographic-computer-data-engineering-services-section/integrity";
 import { semanticId } from "@red-cup-engineering/computer-content-address-engineering-services-section/semiotic-content-address";
 import { isNiUri } from "@red-cup-engineering/uri-services-section/ni-uri";
@@ -198,10 +197,11 @@ function verifiedArtifact(artifact) {
 /**
  * @param {object} specificationCandidate closed-world generic fabrication candidate
  * @param {{slug: string, title: string, subtitle?: string, author: string, bookDir: string, distDir: string}} source trusted Group-controlled manuscript paths only; Pandoc/XeLaTeX is not a sandbox for untrusted uploads
- * @param {{renderer?: typeof produceEbook}} [capabilities] host-provided renderer capability; source never selects an executable
+ * @param {{renderer: function}} [capabilities] host-provided renderer capability; source never selects an executable
  * @returns {Promise<object>} a refused, failed, or fabricated-awaiting-acceptance result
  */
-export async function fabricateEbookEdition(specificationCandidate, source, { renderer = produceEbook } = {}) {
+export async function fabricateEbookEdition(specificationCandidate, source, { renderer } = {}) {
+  if (typeof renderer !== "function") throw new TypeError("ebook fabrication requires a host-provided renderer from Systems publishing");
   const specification = admittedSpecification(specificationCandidate);
   if (specification.status === "refused") return specification;
 

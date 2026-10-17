@@ -1,15 +1,11 @@
 {
   "name": "@red-cup-engineering/ebook-engineering-services-section",
-  "version": "0.3.4",
+  "version": "0.4.0",
   "type": "module",
-  "description": "Multi-chapter book assembly and a hash-verified deterministic build record; the invocation contract, not the program. Cover art generation calls an inference application and is not this substrate section's concern.",
+  "description": "Ebook manifest, source identity, edition admission and acceptance algebra with Data-owned templates; host-provided Systems renders renditions.",
   "license": "UNLICENSED",
   "exports": {
     ".": "./src/ebook-production.mjs",
-    "./fabricate-ebook-edition": "./src/fabricate-ebook-edition.mjs",
-    "./scripts/fabricate-ebook-edition.mjs": "./scripts/fabricate-ebook-edition.mjs",
-    "./scripts/produce-ebook.mjs": "./scripts/produce-ebook.mjs",
-    "./scripts/produce-set-of-ebooks.mjs": "./scripts/produce-set-of-ebooks.mjs",
     "./scripts/specify-ebook-edition.mjs": "./scripts/specify-ebook-edition.mjs",
     "./specify-ebook-edition": "./src/specify-ebook-edition.mjs",
     "./kindle-validation": "./src/kindle-validation.mjs",
@@ -19,29 +15,34 @@
     "./scripts/lint-manuscript.mjs": "./scripts/lint-manuscript.mjs",
     "./accept-ebook-edition": "./src/accept-ebook-edition.mjs",
     "./print-edition": "./src/print-edition.mjs",
-    "./scripts/produce-print-edition.mjs": "./scripts/produce-print-edition.mjs",
     "./scripts/accept-print-edition.mjs": "./scripts/accept-print-edition.mjs",
     "./advance-reader-rendition": "./src/advance-reader-rendition.mjs",
-    "./scripts/render-advance-reader-copy.mjs": "./scripts/render-advance-reader-copy.mjs"
-  },
-  "bin": {
-    "ebook-production-cli": "apps/ebook-production-cli.mjs",
-    "fabricate-ebook-from-corpus": "apps/fabricate-ebook-from-corpus.mjs"
+    "./scripts/render-advance-reader-copy.mjs": "./scripts/render-advance-reader-copy.mjs",
+    "./fabricate-ebook-edition": "./src/fabricate-ebook-edition.mjs",
+    "./carry-editions-forward": "./src/carry-editions-forward.mjs",
+    "./scripts/derive-ebook-chapters-from-corpus.mjs": "./scripts/derive-ebook-chapters-from-corpus.mjs",
+    "./templates/book.latex": "./templates/book.latex",
+    "./templates/book-layout.lua": "./templates/book-layout.lua",
+    "./templates/book.css": "./templates/book.css",
+    "./templates/cover.latex": "./templates/cover.latex",
+    "./templates/cover-illustrated.latex": "./templates/cover-illustrated.latex",
+    "./templates/book-print.latex": "./templates/book-print.latex",
+    "./templates/cover-wrap.latex": "./templates/cover-wrap.latex",
+    "./frozen-lockfile": "./release/pnpm-lock.yaml"
   },
   "files": [
     "src/",
     "scripts/",
     "apps/",
-    "templates/"
+    "templates/",
+    "release"
   ],
   "scripts": {
-    "check": "node --check src/ebook-production.mjs && node --check src/fabricate-ebook-edition.mjs && node --check src/lint-manuscript.mjs && node --check src/narration-script.mjs && node --check src/specify-ebook-edition.mjs && node --check src/kindle-validation.mjs && node --check src/print-edition.mjs && node --check scripts/derive-ebook-chapters-from-corpus.mjs && node --check scripts/produce-ebook.mjs && node --check scripts/produce-print-edition.mjs && node --check scripts/accept-print-edition.mjs && node --check scripts/fabricate-ebook-edition.mjs && node --check scripts/specify-ebook-edition.mjs && node --check scripts/validate-kindle-edition.mjs && node --check scripts/issue-ebook-edition.mjs && node --check scripts/carry-editions-forward.mjs && node --check scripts/lint-manuscript.mjs && node --check scripts/produce-set-of-ebooks.mjs && node --check scripts/record-founding.mjs && node --check apps/ebook-production-cli.mjs && node --check apps/fabricate-ebook-from-corpus.mjs && node --check test/ebook-production.test.mjs && node --check test/fabricate-ebook-edition.test.mjs && node --check test/fabricate-ebook-from-corpus.test.mjs && node --check test/design-tokens.test.mjs && node --check test/derive-ebook-chapters-from-corpus.test.mjs && node --check test/derive-ebook-chapters-from-corpus-faces.test.mjs && node --check test/lint-manuscript.test.mjs && node --check test/narration-script.test.mjs && node --check test/kindle-validation.test.mjs && node --check src/advance-reader-rendition.mjs && node --check scripts/render-advance-reader-copy.mjs && node --check test/advance-reader-rendition.test.mjs",
+    "check": "node --check src/ebook-production.mjs && node --check src/fabricate-ebook-edition.mjs && node --check src/lint-manuscript.mjs && node --check src/narration-script.mjs && node --check src/specify-ebook-edition.mjs && node --check src/kindle-validation.mjs && node --check src/print-edition.mjs && node --check scripts/derive-ebook-chapters-from-corpus.mjs && node --check scripts/accept-print-edition.mjs && node --check scripts/specify-ebook-edition.mjs && node --check scripts/validate-kindle-edition.mjs && node --check scripts/lint-manuscript.mjs && node --check scripts/record-founding.mjs && node --check test/fabricate-ebook-edition.test.mjs && node --check test/design-tokens.test.mjs && node --check test/derive-ebook-chapters-from-corpus.test.mjs && node --check test/derive-ebook-chapters-from-corpus-faces.test.mjs && node --check test/lint-manuscript.test.mjs && node --check test/narration-script.test.mjs && node --check test/kindle-validation.test.mjs && node --check src/advance-reader-rendition.mjs && node --check scripts/render-advance-reader-copy.mjs && node --check test/advance-reader-rendition.test.mjs",
     "test": "node --test test/*.test.mjs",
-    "produce-print-edition": "node scripts/produce-print-edition.mjs",
     "accept-print-edition": "node scripts/accept-print-edition.mjs"
   },
   "dependencies": {
-    "sharp": "0.35.5",
     "@red-cup-engineering/read-markdown-structure-service": "0.2.0",
     "@red-cup-engineering/read-markdown-features-service": "0.2.0",
     "@red-cup-engineering/read-markdown-frontmatter-service": "0.2.0",
@@ -65,5 +66,14 @@
   "engines": {
     "node": ">=20"
   },
-  "private": false
+  "private": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/red-cup-engineering/computer-content-engineering-services-section.git",
+    "directory": "services/computer-documents-engineering-services-section/services/ebook-engineering-services-section"
+  },
+  "packageManager": "pnpm@11.28.5",
+  "registryConsumption": {
+    "frozenLockfile": "./release/pnpm-lock.yaml"
+  }
 }
