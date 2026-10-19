@@ -35,7 +35,8 @@
     "scripts/",
     "apps/",
     "templates/",
-    "release"
+    "release",
+    "!scripts/record-founding.mjs"
   ],
   "scripts": {
     "check": "node --check src/ebook-production.mjs && node --check src/fabricate-ebook-edition.mjs && node --check src/lint-manuscript.mjs && node --check src/narration-script.mjs && node --check src/specify-ebook-edition.mjs && node --check src/kindle-validation.mjs && node --check src/print-edition.mjs && node --check scripts/derive-ebook-chapters-from-corpus.mjs && node --check scripts/accept-print-edition.mjs && node --check scripts/specify-ebook-edition.mjs && node --check scripts/validate-kindle-edition.mjs && node --check scripts/lint-manuscript.mjs && node --check scripts/record-founding.mjs && node --check test/fabricate-ebook-edition.test.mjs && node --check test/design-tokens.test.mjs && node --check test/derive-ebook-chapters-from-corpus.test.mjs && node --check test/derive-ebook-chapters-from-corpus-faces.test.mjs && node --check test/lint-manuscript.test.mjs && node --check test/narration-script.test.mjs && node --check test/kindle-validation.test.mjs && node --check src/advance-reader-rendition.mjs && node --check scripts/render-advance-reader-copy.mjs && node --check test/advance-reader-rendition.test.mjs",
