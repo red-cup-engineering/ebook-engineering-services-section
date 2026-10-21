@@ -3,7 +3,7 @@
   "version": "0.4.1",
   "type": "module",
   "description": "Ebook manifest, source identity, edition admission and acceptance algebra with Data-owned templates; host-provided Systems renders renditions.",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "exports": {
     ".": "./src/ebook-production.mjs",
     "./scripts/specify-ebook-edition.mjs": "./scripts/specify-ebook-edition.mjs",
@@ -74,5 +74,9 @@
   "packageManager": "pnpm@11.28.5",
   "registryConsumption": {
     "frozenLockfile": "./release/pnpm-lock.yaml"
+  },
+  "funding": {
+    "type": "individual",
+    "url": "https://github.com/561-group/.github/blob/main/TIPS.md"
   }
 }
