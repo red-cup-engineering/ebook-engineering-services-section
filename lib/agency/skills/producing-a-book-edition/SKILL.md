@@ -154,7 +154,7 @@ Paths in this section are under
    - A framing description of at most 500 characters.
 3. Run the market's `scripts/compile-catalog.mjs` and commit.
 4. Deploy the market Worker from a clean worktree at that commit
-   (`pnpm --filter "@red-cup-engineering/x402-engineering-services-section..." install --offline --frozen-lockfile`,
+   (`pnpm --filter "@red-cup-engineering/x402-services-section..." install --offline --frozen-lockfile`,
    then wrangler deploy). Never deploy from the shared checkout, whose peers'
    uncommitted code would ship.
 5. Check the route answers 402 with the right `PAYMENT-REQUIRED` amount.
