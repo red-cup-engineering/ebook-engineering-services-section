@@ -38,7 +38,7 @@ ebook section is
    - every claim with its source and date;
    - every contested figure with each reading kept, marked supported, refuted,
      both or neither.
-4. Correct any house note the research proves wrong, in the same commit.
+4. Correct any Group note the research proves wrong, in the same commit.
 5. Add the missing glossary terms the cluster's `requires` and `enables`
    frontmatter needs.
 
@@ -66,7 +66,7 @@ ebook section is
    - front matter and glossary headings marked `{.unnumbered}`, so chapter
      numbers match the text's cross-references.
 3. Put the sources as CSL-JSON in one chapter's frontmatter `references` map.
-   - Write it in **block** YAML: the house codec refuses nested flow
+   - Write it in **block** YAML: the Group codec refuses nested flow
      collections.
    - Wrap a lowercase brand in a title (`<span class="nocase">x402</span>`)
      so citeproc does not capitalize it.
@@ -165,14 +165,14 @@ Paths in this section are under
 7. Write a launch record in the seller's `data/records/launches/`: the price
    and its evidence, the channels, and what stays open.
 
-## 7. Promote: the house's own properties
+## 7. Promote: the Group's own properties
 
 1. Add a creative to the house ad engine's
    `computer-systems-engineering-services-section/services/computer-web-engineering-services-section/services/web-advertising-system-engineering-services-section/data/records/house-creatives.json`.
    - `live` only once the shop page is live.
    - `contexts` are the Koios desks and tags whose readers the book serves.
 2. Deploy the `sites/house-ads-server` Worker the same clean way.
-3. Koios articles carry an `afterArticle` house slot with the article's desk
+3. Koios articles carry an `afterArticle` Group slot with the article's desk
    and tags as context, so a fitting book is preferred there without tracking
    anyone.
 

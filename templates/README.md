@@ -7,7 +7,7 @@ box. It is the default PDF template `scripts/produce-ebook.mjs` uses when a
 manifest does not name its own `template` path.
 
 `cover.latex` and `cover-illustrated.latex` set an ebook's cover (typographic,
-or the house type over the book's illustration), rasterized to 1600 x 2560.
+or the Group type over the book's illustration), rasterized to 1600 x 2560.
 Both, with `book.latex`, are bound into every edition's source digest:
 changing one changes every edition's identity.
 
