@@ -1,5 +1,6 @@
 ---
 name: producing-a-book-edition
+id: producing-a-book-edition
 description: "Carry a book from research to a fabricated edition: an evidence packet in the owning science section, a manuscript beside it, the manuscript lint, the Design Bible's tokens, a digest-bound edition specification answering the founder's request, and a fabricated edition in the MetroPlat library awaiting its proof. Offer and announcement wait for the accepted edition."
 closure-kind: process
 requires-capabilities:
