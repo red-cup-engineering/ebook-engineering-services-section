@@ -24,7 +24,7 @@ note on the book and specification publishing systems
 *The x402 Economy* (economics science section, 2026-09-27) is the reference run.
 Paths below are relative to `lib/emsenn/services/561-group/services/`, and the
 ebook section is
-`engineering-services-section/services/computer-engineering-services-section/services/computer-data-engineering-services-section/services/computer-content-engineering-services-section/services/computer-documents-engineering-services-section/services/ebook-engineering-services-section`.
+`engineering-services-section/services/computer-engineering-services-section/services/computer-systems-engineering-services-section/services/computer-data-systems-engineering-services-section/services/computer-content-systems-engineering-services-section/services/ebook-engineering-services-section`.
 
 ## 1. Research: the evidence packet
 
