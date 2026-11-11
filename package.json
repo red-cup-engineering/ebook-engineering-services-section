@@ -1,6 +1,6 @@
 {
   "name": "@red-cup-engineering/ebook-engineering-services-section",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "type": "module",
   "description": "Ebook manifest, source identity, edition admission and acceptance algebra with Data-owned templates; host-provided Systems renders renditions.",
   "license": "MIT",
