@@ -44,9 +44,6 @@
     "accept-print-edition": "node scripts/accept-print-edition.mjs"
   },
   "dependencies": {
-    "@red-cup-engineering/read-markdown-structure-service": "0.2.0",
-    "@red-cup-engineering/read-markdown-features-service": "0.2.0",
-    "@red-cup-engineering/read-markdown-frontmatter-service": "0.2.0",
     "@red-cup-engineering/computer-content-address-engineering-services-section": "0.2.0",
     "@red-cup-engineering/computer-data-engineering-services-section": "0.2.0",
     "@red-cup-engineering/computer-file-engineering-services-section": "0.4.0",
@@ -61,7 +58,8 @@
     "@red-cup-engineering/markdown-engineering-services-section": "0.5.2",
     "@red-cup-engineering/markdown-vault-bundle-services-section": "0.1.2",
     "@red-cup-engineering/web-theming-service": "0.0.6",
-    "@red-cup-engineering/witness-journal-document-service": "0.1.2"
+    "@red-cup-engineering/witness-journal-document-service": "0.1.2",
+    "@red-cup-engineering/semiotic-eavt-engineering-services-section": "^0.6.0"
   },
   "engines": {
     "node": ">=20"
