@@ -10,8 +10,8 @@ import { createHash } from "node:crypto";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { readMarkdownFrontmatter } from "@red-cup-engineering/markdown-engineering-services-section/read-markdown-frontmatter";
-import { makeNiUri } from "@red-cup-engineering/uri-services-section/ni-uri";
-import { canonicalJson } from "@red-cup-engineering/json-services-section/canonical-json";
+import { makeNiUri } from "@red-cup-engineering/uri-engineering-services-section/ni-uri";
+import { canonicalJson } from "@red-cup-engineering/json-engineering-services-section/canonical-json";
 import { cssFontFamilyList, designTokenColor, designTokenFontStack, designTokenValue, hasDesignToken } from "@red-cup-engineering/web-theming-service/design-tokens";
 
 const REQUIRED_MANIFEST_FIELDS = ["slug", "title", "author", "bookDir", "distDir"];

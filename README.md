@@ -9,7 +9,7 @@
 
 As of 0.4.0, rendition processes, production applications, edition issuance,
 print rendering and proof extraction live in
-`@red-cup-engineering/computer-systems-publishing-engineering-services-section`.
+`@red-cup-engineering/computer-content-publication-systems-engineering-services-section`.
 This package owns source identity, edition admission/acceptance and templates.
 `fabricateEbookEdition` requires an explicit renderer capability; use the Systems
 `./ebook-production` export for the fixed production renderer. The following

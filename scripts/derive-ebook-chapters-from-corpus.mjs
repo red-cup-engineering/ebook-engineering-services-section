@@ -10,9 +10,9 @@
  */
 import { mkdir } from "node:fs/promises";
 import { basename, join } from "node:path";
-import { validateJsonSchema } from "@red-cup-engineering/json-schema-services-section/validation";
+import { validateJsonSchema } from "@red-cup-engineering/json-schema-engineering-services-section/validation";
 import { readMarkdownFile } from "@red-cup-engineering/markdown-engineering-services-section/read-markdown-file";
-import { bundleMarkdownVaultCarriers } from "@red-cup-engineering/markdown-vault-bundle-services-section";
+import { bundleMarkdownVaultCarriers } from "@red-cup-engineering/markdown-vault-bundle-engineering-services-section";
 import { walkPosixPaths } from "@red-cup-engineering/computer-filepath-engineering-services-section/walk-posix-paths";
 import { readFileText } from "@red-cup-engineering/computer-file-engineering-services-section/read-file";
 import { writeMarkdownFile } from "@red-cup-engineering/markdown-engineering-services-section/write-markdown-file";
