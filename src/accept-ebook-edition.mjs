@@ -14,7 +14,7 @@
  * is not its writer, and no error or correction is left open or fixed
  * without saying how.
  */
-import { semanticId } from "@red-cup-engineering/computer-content-address-engineering-services-section/semiotic-content-address";
+import { semanticId } from "@red-cup-engineering/computer-content-address-engineering-services-section/semiotic-content-address-system";
 
 const SEVERITIES = new Set(["error", "correction", "note"]);
 const RESOLUTIONS = new Set(["fixed", "declined", "open"]);
