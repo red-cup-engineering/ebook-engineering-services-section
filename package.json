@@ -27,20 +27,14 @@
     "./templates/cover.latex": "./templates/cover.latex",
     "./templates/cover-illustrated.latex": "./templates/cover-illustrated.latex",
     "./templates/book-print.latex": "./templates/book-print.latex",
-    "./templates/cover-wrap.latex": "./templates/cover-wrap.latex",
-    "./frozen-lockfile": "./release/pnpm-lock.yaml"
+    "./templates/cover-wrap.latex": "./templates/cover-wrap.latex"
   },
   "files": [
     "src/",
     "scripts/",
     "templates/",
-    "release",
     "!scripts/record-founding.mjs"
   ],
-  "scripts": {
-    "check": "node --check src/ebook-production.mjs && node --check src/fabricate-ebook-edition.mjs && node --check src/lint-manuscript.mjs && node --check src/narration-script.mjs && node --check src/specify-ebook-edition.mjs && node --check src/kindle-validation.mjs && node --check src/print-edition.mjs && node --check scripts/derive-ebook-chapters-from-corpus.mjs && node --check scripts/accept-print-edition.mjs && node --check scripts/specify-ebook-edition.mjs && node --check scripts/validate-kindle-edition.mjs && node --check scripts/lint-manuscript.mjs && node --check scripts/record-founding.mjs && node --check src/advance-reader-rendition.mjs && node --check scripts/render-advance-reader-copy.mjs",
-    "accept-print-edition": "node scripts/accept-print-edition.mjs"
-  },
   "dependencies": {
     "@red-cup-engineering/computer-data-engineering-services-section": "^0.7.4",
     "@red-cup-engineering/computer-file-engineering-services-section": "^0.8.8",
@@ -59,28 +53,11 @@
     "@red-cup-engineering/semantic-record-journal-service": "0.6.3",
     "@red-cup-engineering/typed-content": "0.1.0-dev.0"
   },
-  "engines": {
-    "node": ">=20"
-  },
-  "private": false,
   "repository": {
     "type": "git",
     "url": "git+https://github.com/red-cup-engineering/ebook-engineering-services-section.git"
   },
-  "packageManager": "pnpm@11.28.5",
-  "registryConsumption": {
-    "frozenLockfile": "./release/pnpm-lock.yaml"
-  },
-  "funding": {
-    "type": "individual",
-    "url": "https://github.com/561-group/.github/blob/main/TIPS.md"
-  },
   "peerDependencies": {
     "sharp": "^0.35.5"
-  },
-  "peerDependenciesMeta": {
-    "sharp": {
-      "optional": true
-    }
   }
 }
