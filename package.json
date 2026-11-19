@@ -1,0 +1,86 @@
+{
+  "name": "@red-cup-engineering/ebook-engineering-services-section",
+  "version": "0.4.7",
+  "type": "module",
+  "description": "Ebook manifest, source identity, edition admission and acceptance algebra with Data-owned templates; host-provided Systems renders renditions.",
+  "license": "MIT",
+  "exports": {
+    ".": "./src/ebook-production.mjs",
+    "./scripts/specify-ebook-edition.mjs": "./scripts/specify-ebook-edition.mjs",
+    "./specify-ebook-edition": "./src/specify-ebook-edition.mjs",
+    "./kindle-validation": "./src/kindle-validation.mjs",
+    "./scripts/validate-kindle-edition.mjs": "./scripts/validate-kindle-edition.mjs",
+    "./lint-manuscript": "./src/lint-manuscript.mjs",
+    "./narration-script": "./src/narration-script.mjs",
+    "./scripts/lint-manuscript.mjs": "./scripts/lint-manuscript.mjs",
+    "./accept-ebook-edition": "./src/accept-ebook-edition.mjs",
+    "./print-edition": "./src/print-edition.mjs",
+    "./scripts/accept-print-edition.mjs": "./scripts/accept-print-edition.mjs",
+    "./advance-reader-rendition": "./src/advance-reader-rendition.mjs",
+    "./scripts/render-advance-reader-copy.mjs": "./scripts/render-advance-reader-copy.mjs",
+    "./fabricate-ebook-edition": "./src/fabricate-ebook-edition.mjs",
+    "./carry-editions-forward": "./src/carry-editions-forward.mjs",
+    "./scripts/derive-ebook-chapters-from-corpus.mjs": "./scripts/derive-ebook-chapters-from-corpus.mjs",
+    "./templates/book.latex": "./templates/book.latex",
+    "./templates/book-layout.lua": "./templates/book-layout.lua",
+    "./templates/book.css": "./templates/book.css",
+    "./templates/cover.latex": "./templates/cover.latex",
+    "./templates/cover-illustrated.latex": "./templates/cover-illustrated.latex",
+    "./templates/book-print.latex": "./templates/book-print.latex",
+    "./templates/cover-wrap.latex": "./templates/cover-wrap.latex",
+    "./frozen-lockfile": "./release/pnpm-lock.yaml"
+  },
+  "files": [
+    "src/",
+    "scripts/",
+    "templates/",
+    "release",
+    "!scripts/record-founding.mjs"
+  ],
+  "scripts": {
+    "check": "node --check src/ebook-production.mjs && node --check src/fabricate-ebook-edition.mjs && node --check src/lint-manuscript.mjs && node --check src/narration-script.mjs && node --check src/specify-ebook-edition.mjs && node --check src/kindle-validation.mjs && node --check src/print-edition.mjs && node --check scripts/derive-ebook-chapters-from-corpus.mjs && node --check scripts/accept-print-edition.mjs && node --check scripts/specify-ebook-edition.mjs && node --check scripts/validate-kindle-edition.mjs && node --check scripts/lint-manuscript.mjs && node --check scripts/record-founding.mjs && node --check src/advance-reader-rendition.mjs && node --check scripts/render-advance-reader-copy.mjs",
+    "accept-print-edition": "node scripts/accept-print-edition.mjs"
+  },
+  "dependencies": {
+    "@red-cup-engineering/computer-data-engineering-services-section": "^0.7.4",
+    "@red-cup-engineering/computer-file-engineering-services-section": "^0.8.8",
+    "@red-cup-engineering/computer-filepath-engineering-services-section": "^0.1.3",
+    "@red-cup-engineering/computer-text-content-engineering-services-section": "^0.1.3",
+    "@red-cup-engineering/cryptographic-computer-data-engineering-services-section": "^0.3.5",
+    "@red-cup-engineering/json-schema-engineering-services-section": "^0.5.7",
+    "@red-cup-engineering/json-engine": "^0.5.0",
+    "@red-cup-engineering/signcell": "^0.17.5",
+    "@red-cup-engineering/uri-engineering-services-section": "^0.1.7",
+    "@red-cup-engineering/markdown-engineering-services-section": "^0.5.9",
+    "@red-cup-engineering/markdown-vault-bundle-engineering-services-section": "^0.1.4",
+    "@red-cup-engineering/web-theming-service": "^0.0.13",
+    "@red-cup-engineering/semiotic-eavt-engineering-services-section": "0.6.10",
+    "@red-cup-engineering/semiotic-content-address-system": "^0.1.5",
+    "@red-cup-engineering/semantic-record-journal-service": "0.6.3",
+    "@red-cup-engineering/typed-content": "0.1.0-dev.0"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "private": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/red-cup-engineering/ebook-engineering-services-section.git"
+  },
+  "packageManager": "pnpm@11.28.5",
+  "registryConsumption": {
+    "frozenLockfile": "./release/pnpm-lock.yaml"
+  },
+  "funding": {
+    "type": "individual",
+    "url": "https://github.com/561-group/.github/blob/main/TIPS.md"
+  },
+  "peerDependencies": {
+    "sharp": "^0.35.5"
+  },
+  "peerDependenciesMeta": {
+    "sharp": {
+      "optional": true
+    }
+  }
+}

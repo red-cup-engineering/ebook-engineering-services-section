@@ -1,0 +1,104 @@
+/*
+ * House EPUB stylesheet. Passed to pandoc's EPUB writer via --css; its
+ * bytes are hashed into the build record's sourceHash beside the LaTeX
+ * template (see src/ebook-production.mjs's sha256SourceHash), so an edit
+ * here is visible in every subsequent book's provenance record.
+ *
+ * EPUB readers do not run pandoc's --template substitution over --css
+ * files, so this stylesheet is one fixed house design rather than a
+ * per-book parameterized file; per-book brand/division/colophon text and
+ * the fontFamily/accent style fields parameterize the PDF (templates/book.latex,
+ * which pandoc does template-substitute) instead.
+ */
+
+body {
+  font-family: "DejaVu Serif", Georgia, "Liberation Serif", serif;
+  line-height: 1.4;
+  text-align: justify;
+  hyphens: auto;
+}
+
+h1, h2, h3, h4 {
+  font-family: "DejaVu Serif", Georgia, "Liberation Serif", serif;
+  font-weight: bold;
+  line-height: 1.2;
+  color: #3a1420;
+}
+
+/* Chapter openers: each top-level heading starts a fresh page and carries
+   a quiet rule beneath it, echoing the PDF's chapter-opener style. */
+h1 {
+  page-break-before: always;
+  font-size: 1.8em;
+  margin-top: 2.5em;
+  margin-bottom: 0.3em;
+  border-bottom: 2px solid #6b2737;
+  padding-bottom: 0.2em;
+}
+
+h1::first-letter {
+  font-size: 1.6em;
+  color: #6b2737;
+}
+
+h2 { font-size: 1.35em; margin-top: 1.6em; }
+h3 { font-size: 1.1em; margin-top: 1.2em; }
+
+p { margin: 0 0 0.8em 0; text-indent: 1.2em; }
+h1 + p, h2 + p, h3 + p, blockquote p:first-child { text-indent: 0; }
+
+a { color: #6b2737; text-decoration: none; }
+
+blockquote {
+  margin: 1em 1.5em;
+  padding-left: 1em;
+  border-left: 3px solid #6b2737;
+  font-style: italic;
+  color: #333;
+}
+
+code, pre {
+  font-family: "FreeMono", "Liberation Mono", monospace;
+}
+
+pre {
+  background: #f4efe8;
+  padding: 0.6em;
+  border-radius: 3px;
+  overflow-x: auto;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid #6b2737;
+  width: 40%;
+  margin: 2em auto;
+}
+
+/* Title page and colophon, when a book's front matter marks its own
+   containers with these classes. */
+.title-page, .colophon {
+  text-align: center;
+}
+
+.imprint, .colophon {
+  font-size: 0.85em;
+  color: #555;
+  font-style: italic;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+}
+
+th, td {
+  border: 1px solid #ccc;
+  padding: 0.4em 0.6em;
+  text-align: left;
+}
+
+th {
+  background: #f4efe8;
+}

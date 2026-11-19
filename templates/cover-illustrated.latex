@@ -1,0 +1,32 @@
+% The house illustrated cover, 6.25 x 10 in (KDP's 1.6 ratio, 1600 x 2560 at
+% 256 dpi), set by scripts/produce-ebook.mjs (renderIllustratedCoverLatex fills
+% the @@ fields). A book's illustration fills the page, scaled to its width and
+% centered; the illustration is made with the top two fifths left open, and the
+% type sits there in the cover's ink: the byline tracked in capitals in the
+% byline family, the title in the display family, one accent rule, and the
+% subtitle in the display italic. The coordinates are pixels of the 1600 x 2560
+% raster, measured from the top, with the type set on baselines.
+\documentclass{article}
+\usepackage[paperwidth=6.25in,paperheight=10in,margin=0in]{geometry}
+\usepackage{fontspec}
+\usepackage{xcolor}
+\usepackage{tikz}
+\definecolor{ground}{HTML}{@@GROUND@@}
+\definecolor{ink}{HTML}{@@INK@@}
+\definecolor{witness}{HTML}{@@ACCENT@@}
+\pagecolor{ground}
+\newfontfamily\displayfont{@@DISPLAY@@}
+\newfontfamily\bylinefont{@@BYLINE@@}
+\newfontface\displayitalic@@DISPLAYITALIC@@
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\begin{document}
+\begin{tikzpicture}[x=1in/256, y=-1in/256, inner sep=0pt, outer sep=0pt]
+\clip (0,0) rectangle (1600,2560);
+\node at (800,1280) {\includegraphics[width=6.25in]{@@ILLUSTRATION@@}};
+\node[anchor=base, text=ink] at (800,244) {\bylinefont@@BYLINEWEIGHT@@\fontsize{20.8125}{20.8125}\selectfont\addfontfeatures{LetterSpace=33.1}\kern-0.1655em@@AUTHOR@@\kern-0.1655em};
+\node[anchor=base, text=ink] at (800,544) {\displayfont@@DISPLAYWEIGHT@@\fontsize{112.5}{112.5}\selectfont @@TITLE@@};
+\fill[witness] (680,636) rectangle (920,644);
+\node[anchor=base, text=ink] at (800,729) {\displayitalic\fontsize{23.625}{23.625}\selectfont @@SUBTITLE@@};
+\end{tikzpicture}
+\end{document}
