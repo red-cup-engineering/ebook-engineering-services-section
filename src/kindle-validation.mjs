@@ -23,7 +23,7 @@ export const RETAILER_PORTABILITY_PROFILES = Object.freeze({
   "kobo-writing-life-2026-09": Object.freeze({ scriptedContent: "untested", remoteResources: "degraded", mediaOverlays: "untested", mathml: "untested", embeddedFonts: "supported", svg: "supported", fixedLayout: "degraded", toc: "supported", landmarks: "supported", pageList: "supported" }),
 });
 
-export const kindleValidationReceiptType = defineSchemaType({
+export const kindleValidationRecordType = defineSchemaType({
   $id: "org.561-group.ebook.kindle-validation-receipt.v2",
   title: "Kindle validation receipt",
   description: "Content-addressed evidence that exact EPUB and cover bytes passed the pinned Kindle release gate, with compatibility observations kept separate.",
@@ -153,7 +153,7 @@ export async function inspectEpub(epubPath, capabilities = {}) {
   catch (error) { return Object.freeze({ features: Object.freeze({ type: "EpubFeatureManifest", version: 1, outcome: "untested", obstruction: String(error?.message ?? error) }), navigation: Object.freeze({ type: "EpubNavigationAssay", version: 1, passed: false, outcome: "untested", obstruction: String(error?.message ?? error) }) }); }
 }
 
-export function assayRetailerPortability(features) {
+export function checkRetailerPortability(features) {
   const assays = {};
   for (const [profile, capabilities] of Object.entries(RETAILER_PORTABILITY_PROFILES)) {
     const results = {};
@@ -200,9 +200,9 @@ export async function validateKindleEdition({ book, epubPath, coverPath, evidenc
     capabilities.skipObservation === true ? { outcome: "untested", passed: false, profile: EPUB_VALIDATOR_PROFILES.observation, obstruction: "observation-disabled" } : validateEpub(epubPath, { ...capabilities, tool: capabilities.observationTool, profile: EPUB_VALIDATOR_PROFILES.observation, evidenceRoot }),
     accessibilityEvidence(epubPath, evidenceRoot, capabilities), validateKindleCover(coverPath, capabilities),
   ]);
-  const portability = assayRetailerPortability(inspect.features), readingSystems = readingSystemEvidence(epubArtifact.sha256, validatedAt, capabilities.readingSystemObservations), passed = release.passed === true && coverCheck.passed === true && inspect.navigation.passed === true && portability["kindle-reflowable-2026-09"].passed === true;
+  const portability = checkRetailerPortability(inspect.features), readingSystems = readingSystemEvidence(epubArtifact.sha256, validatedAt, capabilities.readingSystemObservations), passed = release.passed === true && coverCheck.passed === true && inspect.navigation.passed === true && portability["kindle-reflowable-2026-09"].passed === true;
   const content = { type: "KindleValidationReceipt", version: 2, book, validatedAt, validatorProfile: EPUB_VALIDATOR_PROFILES.release, artifacts: { epub: epubArtifact, cover: coverArtifact }, checks: { conformance: { release, observation }, accessibility, features: inspect.features, navigation: inspect.navigation, portability, readingSystems, cover: coverCheck }, passed };
-  const admitted = createTypedMark(kindleValidationReceiptType, content); if (!admitted.ok) throw new TypeError(admitted.refusal.message); return admitted.value;
+  const validated = createTypedMark(kindleValidationRecordType, content); if (!validated.ok) throw new TypeError(validated.refusal.message); return validated.value;
 }
 
 function niSha256Hex(value) {
@@ -221,10 +221,10 @@ export function acceptKindleRelease({ book, fabrication, editorialAcceptance, va
     const digest = fabrication.artifacts?.[kind]?.sha256;
     if (typeof digest !== "string" || digest.length === 0 || editorialAcceptance.artifacts?.[kind]?.sha256 !== digest) throw new TypeError(`editorial acceptance names different ${kind} bytes from the fabrication`);
   }
-  if (validation?.type !== kindleValidationReceiptType.id || validation.content?.passed !== true || validation.content?.book !== book) throw new TypeError("Kindle release acceptance requires a passing validation SignCell for this book");
-  const admittedValidation = admitTypedMark(kindleValidationReceiptType, validation);
-  if (!admittedValidation.ok) throw new TypeError("Kindle release acceptance requires an intact validation SignCell");
-  validation = admittedValidation.value;
+  if (validation?.type !== kindleValidationRecordType.id || validation.content?.passed !== true || validation.content?.book !== book) throw new TypeError("Kindle release acceptance requires a passing validation SignCell for this book");
+  const validatedValidation = admitTypedMark(kindleValidationRecordType, validation);
+  if (!validatedValidation.ok) throw new TypeError("Kindle release acceptance requires an intact validation SignCell");
+  validation = validatedValidation.value;
   const built = niSha256Hex(fabrication.artifacts?.epub?.sha256), observed = validation.content.artifacts.epub.sha256;
   if (!built || built !== observed) throw new TypeError("validation evidence names different EPUB bytes from the fabrication");
   const release = validation.content.checks.conformance.release, accessibility = validation.content.checks.accessibility;
@@ -237,20 +237,20 @@ export function acceptKindleRelease({ book, fabrication, editorialAcceptance, va
     closedObligationIds: ["editorial-proof", "epub-conformance", "accessibility-assessment"],
     evidence: { editorialProof: editorialAcceptance.proof?.digest ?? null, validation: validation.id, conformanceReport: release.report.sha256, accessibilityConformanceClaim: accessibility.conformsTo },
   };
-  const admitted = createTypedMark(kindleReleaseAcceptanceType, content); if (!admitted.ok) throw new TypeError(admitted.refusal.message); return admitted.value;
+  const validated = createTypedMark(kindleReleaseAcceptanceType, content); if (!validated.ok) throw new TypeError(validated.refusal.message); return validated.value;
 }
 
 /** Attribute an exact SignCell with an Ed25519 key held outside the repository. */
-export function signKindleValidationReceipt(cell, privateKey, keyId) {
-  if (cell?.type !== kindleValidationReceiptType.id || cell.content?.passed !== true) throw new TypeError("only a passing Kindle validation SignCell can be signed");
+export function signKindleValidationRecord(cell, privateKey, keyId) {
+  if (cell?.type !== kindleValidationRecordType.id || cell.content?.passed !== true) throw new TypeError("only a passing Kindle validation SignCell can be signed");
   if (typeof keyId !== "string" || !keyId) throw new TypeError("receipt signer keyId is required");
   const signature = signBytes(null, Buffer.from(cell.id), privateKey).toString("base64url");
   return Object.freeze({ type: "SignedSignCell", version: 1, cell, signature: Object.freeze({ algorithm: "Ed25519", keyId, value: signature }) });
 }
 
-export function verifyKindleValidationReceipt(envelope, publicKey) {
+export function verifyKindleValidationRecord(envelope, publicKey) {
   const cell = envelope?.cell;
-  if (cell?.type !== kindleValidationReceiptType.id || cell.content?.passed !== true || cell.content?.validatorProfile?.id !== EPUB_VALIDATOR_PROFILES.release.id || envelope.signature?.algorithm !== "Ed25519") return false;
-  const admitted = createTypedMark(kindleValidationReceiptType, cell.content);
-  return admitted.ok && admitted.value.id === cell.id && verifyBytes(null, Buffer.from(cell.id), publicKey, Buffer.from(envelope.signature.value ?? "", "base64url"));
+  if (cell?.type !== kindleValidationRecordType.id || cell.content?.passed !== true || cell.content?.validatorProfile?.id !== EPUB_VALIDATOR_PROFILES.release.id || envelope.signature?.algorithm !== "Ed25519") return false;
+  const validated = createTypedMark(kindleValidationRecordType, cell.content);
+  return validated.ok && validated.value.id === cell.id && verifyBytes(null, Buffer.from(cell.id), publicKey, Buffer.from(envelope.signature.value ?? "", "base64url"));
 }

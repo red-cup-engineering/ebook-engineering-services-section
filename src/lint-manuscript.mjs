@@ -134,8 +134,8 @@ function fictionFindings(parsed, bible, { serialInProgress = false } = {}) {
   const characters = new Map((bible.signature?.characters ?? []).map((c) => [c.id, c]));
   const arc = bible.arc ?? [];
   const secrets = new Map((bible.knowledge ?? []).map((s) => [s.id, []]));
-  const refusals = (bible.refusals ?? []).map((r) => ({ ...r, regex: new RegExp(r.pattern, r.flags ?? "iu") }));
-  const retired = (bible.retired ?? []).map((name) => ({ name, regex: new RegExp(`\\b${name}\\b`, "u") }));
+  const rejections = (bible.refusals ?? []).map((r) => ({ ...r, regex: new RegExp(r.pattern, r.flags ?? "iu") }));
+  const removed = (bible.retired ?? []).map((name) => ({ name, regex: new RegExp(`\\b${name}\\b`, "u") }));
   const known = knownNames(bible);
   const unknown = new Map();
   const numbered = parsed.filter((chapter) => chapter.numbered);
@@ -143,11 +143,11 @@ function fictionFindings(parsed, bible, { serialInProgress = false } = {}) {
   for (const chapter of parsed) {
     const { path, frontmatter } = chapter;
     const text = prose(chapter.blocks);
-    for (const refusal of refusals) {
-      const match = text.match(refusal.regex);
-      if (match) findings.push({ severity: "error", rule: "refusal", path, message: `${refusal.id}: "${match[0]}" (${refusal.reason})` });
+    for (const rejection of rejections) {
+      const match = text.match(rejection.regex);
+      if (match) findings.push({ severity: "error", rule: "refusal", path, message: `${rejection.id}: "${match[0]}" (${rejection.reason})` });
     }
-    for (const { name, regex } of retired) if (regex.test(text)) findings.push({ severity: "error", rule: "retired-name", path, message: `${name} is a retired name` });
+    for (const { name, regex } of removed) if (regex.test(text)) findings.push({ severity: "error", rule: "retired-name", path, message: `${name} is a retired name` });
     // Within each paragraph: a paragraph break is a sentence break.
     for (const match of paragraphs(chapter.blocks).flatMap((paragraph) => [...paragraph.matchAll(MID_SENTENCE_NAME)])) {
       for (const word of match[0].split(/\s+/u)) {

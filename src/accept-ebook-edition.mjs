@@ -19,7 +19,7 @@ import { semanticId } from "@red-cup-engineering/semiotic-content-address-system
 const SEVERITIES = new Set(["error", "correction", "note"]);
 const RESOLUTIONS = new Set(["fixed", "declined", "open"]);
 
-function refused(code, message, detail = {}) {
+function rejected(code, message, detail = {}) {
   return Object.freeze({ type: "EbookEditionAcceptance", version: 1, status: "refused", code, message, ...detail });
 }
 
@@ -31,28 +31,28 @@ function refused(code, message, detail = {}) {
  */
 export function acceptEbookEdition(fabrication, proof, { now = new Date().toISOString() } = {}) {
   if (fabrication?.type !== "EbookEditionFabricationResult" || fabrication.status !== "fabricated-awaiting-acceptance") {
-    return refused("NOT_AWAITING_ACCEPTANCE", "Only a fabricated edition awaiting acceptance can be accepted.");
+    return rejected("NOT_AWAITING_ACCEPTANCE", "Only a fabricated edition awaiting acceptance can be accepted.");
   }
   const editionInputDigest = fabrication.specification?.projections?.[0]?.configuration?.editionInputDigest;
-  if (proof?.type !== "EbookEditionProof" || proof.version !== 1) return refused("NOT_A_PROOF", "The proof is not an EbookEditionProof record.");
+  if (proof?.type !== "EbookEditionProof" || proof.version !== 1) return rejected("NOT_A_PROOF", "The proof is not an EbookEditionProof record.");
   if (proof.editionInputDigest !== editionInputDigest) {
-    return refused("PROOF_OF_ANOTHER_EDITION", "The proof names another edition's input digest.", { editionInputDigest, proofDigest: proof.editionInputDigest });
+    return rejected("PROOF_OF_ANOTHER_EDITION", "The proof names another edition's input digest.", { editionInputDigest, proofDigest: proof.editionInputDigest });
   }
   const read = { epub: proof.artifacts?.epub, screenPdf: proof.artifacts?.screenPdf };
   const built = { epub: fabrication.artifacts?.epub?.sha256, screenPdf: fabrication.artifacts?.screenPdf?.sha256 };
   if (read.epub !== built.epub || read.screenPdf !== built.screenPdf) {
-    return refused("PROOF_OF_OTHER_BYTES", "The proof must name the EPUB and PDF digests of the fabricated edition it read.", { artifacts: built, proofArtifacts: read });
+    return rejected("PROOF_OF_OTHER_BYTES", "The proof must name the EPUB and PDF digests of the fabricated edition it read.", { artifacts: built, proofArtifacts: read });
   }
   if (typeof proof.proofer !== "string" || proof.proofer === "" || proof.proofer === proof.writer) {
-    return refused("PROOFER_IS_WRITER", "The proofer must be named and must not be the edition's writer.");
+    return rejected("PROOFER_IS_WRITER", "The proofer must be named and must not be the edition's writer.");
   }
   if (!Array.isArray(proof.findings) || proof.findings.some((finding) => !SEVERITIES.has(finding?.severity) || !RESOLUTIONS.has(finding?.resolution))) {
-    return refused("MALFORMED_FINDINGS", "Every finding needs a severity (error, correction, note) and a resolution (fixed, declined, open).");
+    return rejected("MALFORMED_FINDINGS", "Every finding needs a severity (error, correction, note) and a resolution (fixed, declined, open).");
   }
   const blocking = proof.findings.filter((finding) => finding.severity !== "note"
     && (finding.resolution === "open" || (finding.resolution === "declined" && !finding.reason) || (finding.resolution === "fixed" && !finding.fix)));
   if (blocking.length > 0) {
-    return refused("FINDINGS_UNRESOLVED", "Errors and corrections must be fixed, or declined with a reason, before acceptance.", { unresolved: blocking.map((finding) => finding.id) });
+    return rejected("FINDINGS_UNRESOLVED", "Errors and corrections must be fixed, or declined with a reason, before acceptance.", { unresolved: blocking.map((finding) => finding.id) });
   }
   const pending = (fabrication.pendingAcceptanceObligationIds ?? []).filter((id) => id !== "editorial-proof");
   const count = (severity) => proof.findings.filter((finding) => finding.severity === severity).length;
@@ -89,12 +89,12 @@ export function acceptEbookEdition(fabrication, proof, { now = new Date().toISOS
  * @returns {object} an EbookEditionProof, or a refusal
  */
 export function carryEbookEditionProof({ priorProof, priorAcceptance, fabrication, text, now = new Date().toISOString() }) {
-  const refusal = (code, message) => Object.freeze({ type: "EbookEditionProofCarryRefusal", version: 1, code, message });
-  if (priorAcceptance?.type !== "EbookEditionAcceptance" || priorAcceptance.status !== "accepted") return refusal("PRIOR_NOT_ACCEPTED", "Only an accepted edition's proof can be carried.");
-  if (priorProof?.type !== "EbookEditionProof" || semanticId(priorProof) !== priorAcceptance.proof?.digest) return refusal("PROOF_NOT_THE_ACCEPTED_ONE", "The proof is not the one the prior edition was accepted on.");
-  if (fabrication?.type !== "EbookEditionFabricationResult" || fabrication.status !== "fabricated-awaiting-acceptance") return refusal("NOT_AWAITING_ACCEPTANCE", "Only a fabricated edition awaiting acceptance can take a carried proof.");
+  const rejection = (code, message) => Object.freeze({ type: "EbookEditionProofCarryRefusal", version: 1, code, message });
+  if (priorAcceptance?.type !== "EbookEditionAcceptance" || priorAcceptance.status !== "accepted") return rejection("PRIOR_NOT_ACCEPTED", "Only an accepted edition's proof can be carried.");
+  if (priorProof?.type !== "EbookEditionProof" || semanticId(priorProof) !== priorAcceptance.proof?.digest) return rejection("PROOF_NOT_THE_ACCEPTED_ONE", "The proof is not the one the prior edition was accepted on.");
+  if (fabrication?.type !== "EbookEditionFabricationResult" || fabrication.status !== "fabricated-awaiting-acceptance") return rejection("NOT_AWAITING_ACCEPTANCE", "Only a fabricated edition awaiting acceptance can take a carried proof.");
   if (!text?.prior?.epub || text.prior.epub !== text.current?.epub || !text.prior.pdf || text.prior.pdf !== text.current?.pdf) {
-    return refusal("TEXT_CHANGED", "The new edition's text is not the proofed edition's; it needs its own proof.");
+    return rejection("TEXT_CHANGED", "The new edition's text is not the proofed edition's; it needs its own proof.");
   }
   return Object.freeze({
     type: "EbookEditionProof",

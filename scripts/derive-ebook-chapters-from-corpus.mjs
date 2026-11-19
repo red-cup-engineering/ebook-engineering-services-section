@@ -218,8 +218,8 @@ async function renderSectionChapter(sectionRoot, carriers) {
     if (characters.length > 0) {
       for (const character of characters) {
         const office = character.office ?? character.role;
-        const disposition = typeof character.disposition === "string" ? character.disposition.split(/(?<=[.!?])\s/)[0] : null;
-        const detail = office ?? disposition ?? "(no office or disposition recorded)";
+        const decision = typeof character.disposition === "string" ? character.disposition.split(/(?<=[.!?])\s/)[0] : null;
+        const detail = office ?? decision ?? "(no office or disposition recorded)";
         lines.push("- " + (character.name ?? "(unnamed)") + ", " + detail);
       }
       lines.push("");

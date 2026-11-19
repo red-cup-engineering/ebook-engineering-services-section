@@ -19,7 +19,7 @@ const CATEGORY = "ebook-production-services-section.founding";
  * @param {{ dataRoot?: string }} [options]
  * @returns {ReturnType<typeof createEvidenceJournal>}
  */
-function journal(options = {}) {
+function log(options = {}) {
   return createEvidenceJournal({
     root: resolve(options.dataRoot ?? join(SECTION_ROOT, "data/records")),
     objectKind: OBJECT_KIND,
@@ -76,7 +76,7 @@ export function recordFounding(options = {}) {
     },
     testCount: { tests: 9, pass: 9, fail: 0, suite: "ebook-production-services-section test/ebook-production.test.mjs" },
   };
-  return journal(options).record({
+  return log(options).record({
     category: CATEGORY,
     recordedAt,
     record,

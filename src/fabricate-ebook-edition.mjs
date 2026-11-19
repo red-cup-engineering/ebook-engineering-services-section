@@ -30,14 +30,14 @@ const REQUIRED_PROJECTIONS = new Map([
 const FIXED_PROFILE = "epub-screen-pdf-v1";
 
 
-function refused(code, message, detail = {}) {
+function rejected(code, message, detail = {}) {
   return Object.freeze({ type: "EbookEditionFabricationResult", version: 1, status: "refused", code, message, ...detail });
 }
 
-function admittedSpecification(candidate) {
+function validatedSpecification(candidate) {
   const specification = admitArtifactFabricationSpecification(candidate);
   if (specification.type === "ArtifactFabricationSpecificationRefusal") {
-    return refused(specification.code, specification.message, { refusal: specification });
+    return rejected(specification.code, specification.message, { refusal: specification });
   }
   return specification;
 }
@@ -201,20 +201,20 @@ function verifiedArtifact(artifact) {
  * @returns {Promise<object>} a refused, failed, or fabricated-awaiting-acceptance result
  */
 export async function fabricateEbookEdition(specificationCandidate, source, { renderer } = {}) {
-  const specification = admittedSpecification(specificationCandidate);
+  const specification = validatedSpecification(specificationCandidate);
   if (specification.status === "refused") return specification;
 
   const projectionError = validateEditionProjections(specification);
-  if (projectionError) return refused("MISSING_REQUIRED_PROJECTION", projectionError, { specification });
+  if (projectionError) return rejected("MISSING_REQUIRED_PROJECTION", projectionError, { specification });
 
   const sourceDescription = describeEbookEditionSource(source);
   if (sourceDescription.type === "EbookEditionSourceDescriptionRefusal") {
-    return refused(sourceDescription.code, sourceDescription.message, { specification, sourceDescription });
+    return rejected(sourceDescription.code, sourceDescription.message, { specification, sourceDescription });
   }
   const actualEditionInputDigest = sourceDescription.editionInputDigest;
-  const admittedEditionInputDigest = specification.projections[0].configuration.editionInputDigest;
-  if (actualEditionInputDigest !== admittedEditionInputDigest) {
-    return refused("EDITION_INPUT_DIGEST_MISMATCH", "The edition source bytes do not match the editionInputDigest bound by the fixed projection profile.", { specification, actualEditionInputDigest });
+  const validatedEditionInputDigest = specification.projections[0].configuration.editionInputDigest;
+  if (actualEditionInputDigest !== validatedEditionInputDigest) {
+    return rejected("EDITION_INPUT_DIGEST_MISMATCH", "The edition source bytes do not match the editionInputDigest bound by the fixed projection profile.", { specification, actualEditionInputDigest });
   }
 
   const plan = admitArtifactFabricationRealizationPlan(specification, {
@@ -226,10 +226,10 @@ export async function fabricateEbookEdition(specificationCandidate, source, { re
     acceptanceObligationIds: specification.acceptanceObligations.map(({ id }) => id),
   });
   if (plan.type === "ArtifactFabricationRealizationPlanRefusal") {
-    return refused(plan.code, plan.message, { specification, refusal: plan });
+    return rejected(plan.code, plan.message, { specification, refusal: plan });
   }
 
-  if(typeof renderer!=="function") return refused("RENDERER_REQUIRED", "Systems publishing must supply the rendition renderer.", {specification, plan});
+  if(typeof renderer!=="function") return rejected("RENDERER_REQUIRED", "Systems publishing must supply the rendition renderer.", {specification, plan});
   let record;
   try {
     record = await renderer({
