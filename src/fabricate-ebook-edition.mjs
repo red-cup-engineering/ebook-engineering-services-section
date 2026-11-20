@@ -10,8 +10,8 @@ import { readFileSync, statSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
-  validateArtifactFabricationRealizationPlan,
-  validateArtifactFabricationSpecification,
+  admitArtifactFabricationRealizationPlan,
+  admitArtifactFabricationSpecification,
 } from "@red-cup-engineering/computer-data-engineering-services-section/artifact-fabrication";
 import { designTokenStyle, listChapters, normalizeAssets, sha256File, sha256SourceHash } from "./ebook-production.mjs";
 import { sha256Hex } from "@red-cup-engineering/cryptographic-computer-data-engineering-services-section/integrity";
@@ -35,7 +35,7 @@ function rejected(code, message, detail = {}) {
 }
 
 function validatedSpecification(candidate) {
-  const specification = validateArtifactFabricationSpecification(candidate);
+  const specification = admitArtifactFabricationSpecification(candidate);
   if (specification.type === "ArtifactFabricationSpecificationRefusal") {
     return rejected(specification.code, specification.message, { refusal: specification });
   }
@@ -217,7 +217,7 @@ export async function fabricateEbookEdition(specificationCandidate, source, { re
     return rejected("EDITION_INPUT_DIGEST_MISMATCH", "The edition source bytes do not match the editionInputDigest bound by the fixed projection profile.", { specification, actualEditionInputDigest });
   }
 
-  const plan = validateArtifactFabricationRealizationPlan(specification, {
+  const plan = admitArtifactFabricationRealizationPlan(specification, {
     type: "ArtifactFabricationRealizationPlanCandidate",
     version: 1,
     artifactId: specification.artifact.id,
