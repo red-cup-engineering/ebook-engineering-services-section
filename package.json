@@ -1,6 +1,6 @@
 {
   "name": "@red-cup-engineering/ebook-engineering-services-section",
-  "version": "0.4.7",
+  "version": "0.4.8-dev.0",
   "type": "module",
   "description": "Ebook manifest, source identity, edition admission and acceptance algebra with Data-owned templates; host-provided Systems renders renditions.",
   "license": "MIT",
@@ -46,7 +46,7 @@
     "@red-cup-engineering/signcell": "^0.17.5",
     "@red-cup-engineering/uri-engineering-services-section": "^0.1.7",
     "@red-cup-engineering/markdown-engineering-services-section": "^0.5.9",
-    "@red-cup-engineering/markdown-vault-bundle-engineering-services-section": "^0.1.4",
+    "@red-cup-engineering/cairn": "^0.4.4",
     "@red-cup-engineering/web-theming-service": "^0.0.13",
     "@red-cup-engineering/semiotic-eavt-engineering-services-section": "0.6.10",
     "@red-cup-engineering/semiotic-content-address-system": "^0.1.5",
