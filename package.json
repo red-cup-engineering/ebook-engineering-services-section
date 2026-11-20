@@ -1,6 +1,6 @@
 {
   "name": "@red-cup-engineering/ebook-engineering-services-section",
-  "version": "0.4.7",
+  "version": "0.4.8-dev.0",
   "type": "module",
   "description": "Ebook manifest, source identity, edition admission and acceptance algebra with Data-owned templates; host-provided Systems renders renditions.",
   "license": "MIT",
@@ -28,7 +28,7 @@
     "./templates/cover-illustrated.latex": "./templates/cover-illustrated.latex",
     "./templates/book-print.latex": "./templates/book-print.latex",
     "./templates/cover-wrap.latex": "./templates/cover-wrap.latex",
-    "./frozen-lockfile": "./release/pnpm-lock.yaml"
+    "./frozen-lockfile": "./release/ebook-0.4.7-lock.yaml"
   },
   "files": [
     "src/",
@@ -49,15 +49,12 @@
     "@red-cup-engineering/cryptographic-computer-data-engineering-services-section": "^0.3.5",
     "@red-cup-engineering/json-schema-engineering-services-section": "^0.5.7",
     "@red-cup-engineering/json-engine": "^0.5.0",
-    "@red-cup-engineering/signcell": "^0.17.5",
     "@red-cup-engineering/uri-engineering-services-section": "^0.1.7",
     "@red-cup-engineering/markdown-engineering-services-section": "^0.5.9",
     "@red-cup-engineering/markdown-vault-bundle-engineering-services-section": "^0.1.4",
     "@red-cup-engineering/web-theming-service": "^0.0.13",
-    "@red-cup-engineering/semiotic-eavt-engineering-services-section": "0.6.10",
     "@red-cup-engineering/semiotic-content-address-system": "^0.1.5",
-    "@red-cup-engineering/semantic-record-journal-service": "0.6.3",
-    "@red-cup-engineering/typed-content": "0.1.0-dev.0"
+    "@red-cup-engineering/typed-content": "0.1.0-dev.0 || 0.1.0 || 0.1.1-dev.0"
   },
   "engines": {
     "node": ">=20"
@@ -68,9 +65,6 @@
     "url": "git+https://github.com/red-cup-engineering/ebook-engineering-services-section.git"
   },
   "packageManager": "pnpm@11.28.5",
-  "registryConsumption": {
-    "frozenLockfile": "./release/pnpm-lock.yaml"
-  },
   "funding": {
     "type": "individual",
     "url": "https://github.com/561-group/.github/blob/main/TIPS.md"
@@ -82,5 +76,8 @@
     "sharp": {
       "optional": true
     }
+  },
+  "devDependencies": {
+    "@red-cup-engineering/semantic-record-journal-service": "0.6.3"
   }
 }

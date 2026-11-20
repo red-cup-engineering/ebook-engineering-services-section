@@ -243,6 +243,7 @@ export function acceptKindleRelease({ book, fabrication, editorialAcceptance, va
 /** Attribute an exact SignCell with an Ed25519 key held outside the repository. */
 export function signKindleValidationReceipt(cell, privateKey, keyId) {
   if (cell?.type !== kindleValidationReceiptType.id || cell.content?.passed !== true) throw new TypeError("only a passing Kindle validation SignCell can be signed");
+  if (!admitTypedMark(kindleValidationReceiptType, cell).ok) throw new TypeError("the validation receipt does not match its content address");
   if (typeof keyId !== "string" || !keyId) throw new TypeError("receipt signer keyId is required");
   const signature = signBytes(null, Buffer.from(cell.id), privateKey).toString("base64url");
   return Object.freeze({ type: "SignedSignCell", version: 1, cell, signature: Object.freeze({ algorithm: "Ed25519", keyId, value: signature }) });

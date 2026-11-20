@@ -480,3 +480,7 @@ for matter made for the page, such as a recipe, a glossary or a reading guide.
 
 The house YAML codec reads chapter frontmatter, so `references` must be written in block style:
 nested flow collections such as `{date-parts: [[2026]]}` are refused.
+
+The `./frozen-lockfile` export retains the pnpm lock distributed inside the
+published 0.4.7 archive. It identifies the dependencies of that edition.
+Install the 0.4.8 development archive with its declared dependencies.
