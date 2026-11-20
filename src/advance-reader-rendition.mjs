@@ -1,8 +1,8 @@
 import * as values from "@red-cup-engineering/semiotic-content-address-system";
-import { makeTemporaryDirectory } from "@red-cup-engineering/computer-file-engineering-services-section/temporary-directory";
+import { withTemporaryDirectory } from "@red-cup-engineering/computer-file-engineering-services-section/temporary-directory";
+import { writeFileBytes } from "@red-cup-engineering/computer-file-engineering-services-section/write-file";
 import { execFile } from "node:child_process";
-import { createHash } from "node:crypto";
-import { chmod, copyFile, mkdir, readFile, rm, utimes, writeFile } from "node:fs/promises";
+import { chmod, copyFile, mkdir, readFile, realpath, utimes, writeFile } from "node:fs/promises";
 
 import { dirname, join, resolve } from "node:path";
 import { promisify } from "node:util";
@@ -115,39 +115,49 @@ async function readPackage(epubPath) {
  * @param {{acceptedEpub: string, outPath: string, notice: object, stamp?: {preparedFor: string, grant: string}|null}} input
  * @returns {Promise<{artifactSha256: string, pageSha256: string, bytes: number}>}
  */
-export async function renderAdvanceReaderEpub({ acceptedEpub, outPath, notice, stamp = null }) {
+export async function renderAdvanceReaderEpub(input) {
+  return receiveAdvanceReaderEpub(input, ({ rendered }) => rendered);
+}
+
+async function receiveAdvanceReaderEpub({ acceptedEpub, outPath, notice, stamp = null }, qualify, expectedAcceptedSha) {
   const accepted = resolve(acceptedEpub), out = resolve(outPath);
   if (accepted === out) throw new Error("the rendition never overwrites the accepted EPUB");
   if (stamp && (!stamp.preparedFor || !GRANT.test(stamp.grant ?? ""))) throw new TypeError("a stamp names who it is prepared for and a grant id");
-  const { opfEntry, root, opf, titlePageItemId, modified } = await readPackage(accepted);
-  const title = opf.match(/<dc:title\b[^>]*>([^<]+)<\/dc:title>/u)?.[1] ?? "";
-  const language = opf.match(/<dc:language>([^<]+)<\/dc:language>/u)?.[1] ?? "en-US";
-  const page = advanceReaderPage({ ...notice, title, language, stamp });
-  const entries = [[opfEntry, withAdvanceReaderPackage(opf, { titlePageItemId, grant: stamp?.grant ?? null })], [`${root}${PAGE_ENTRY}`, page]];
-  await mkdir(dirname(out), { recursive: true });
-  await copyFile(accepted, out);
-  const temporaryDirectory = makeTemporaryDirectory("advance-reader");
-  try {
-const staging = temporaryDirectory.path;
-  const epoch = new Date(modified);
-  try {
+  const existingOutput = await realpath(out).catch(error => {
+    if (error.code !== "ENOENT") throw error;
+    return null;
+  });
+  if (existingOutput === await realpath(accepted)) throw new Error("the rendition never overwrites the accepted EPUB");
+
+  return withTemporaryDirectory("advance-reader", async staging => {
+    const acceptedSnapshot = join(staging, "accepted.epub");
+    const artifact = join(staging, "rendition.epub");
+    const members = join(staging, "members");
+    await copyFile(accepted, acceptedSnapshot);
+    const acceptedSha = expectedAcceptedSha === undefined ? undefined : values.sha256Hex(await readFile(acceptedSnapshot));
+    if (expectedAcceptedSha !== undefined && acceptedSha !== expectedAcceptedSha)
+      throw new Error(`the EPUB is ${acceptedSha}, not the accepted ${expectedAcceptedSha}`);
+    const { opfEntry, root, opf, titlePageItemId, modified } = await readPackage(acceptedSnapshot);
+    const title = opf.match(/<dc:title\b[^>]*>([^<]+)<\/dc:title>/u)?.[1] ?? "";
+    const language = opf.match(/<dc:language>([^<]+)<\/dc:language>/u)?.[1] ?? "en-US";
+    const page = advanceReaderPage({ ...notice, title, language, stamp });
+    const entries = [[opfEntry, withAdvanceReaderPackage(opf, { titlePageItemId, grant: stamp?.grant ?? null })], [`${root}${PAGE_ENTRY}`, page]];
+    const epoch = new Date(modified);
+    await copyFile(acceptedSnapshot, artifact);
     for (const [entry, text] of entries) {
-      const staged = join(staging, entry);
+      const staged = join(members, entry);
       await mkdir(dirname(staged), { recursive: true });
       await writeFile(staged, text, "utf8");
       await chmod(staged, 0o644);
       await utimes(staged, epoch, epoch);
     }
-    await exec("zip", ["-X", "-q", out, ...entries.map(([entry]) => entry)], { cwd: staging, env: { ...process.env, TZ: "UTC" } });
-  } finally {
-    await rm(staging, { recursive: true, force: true });
-  }
-  const bytes = await readFile(out);
-  return Object.freeze({ artifactSha256: values.sha256Hex(bytes), pageSha256: values.sha256Hex(Buffer.from(page, "utf8")), bytes: bytes.length });
-
-  } finally {
-    temporaryDirectory.remove();
-  }
+    await exec("zip", ["-X", "-q", artifact, ...entries.map(([entry]) => entry)], { cwd: members, env: { ...process.env, TZ: "UTC" } });
+    const bytes = await readFile(artifact);
+    const rendered = Object.freeze({ artifactSha256: values.sha256Hex(bytes), pageSha256: values.sha256Hex(Buffer.from(page, "utf8")), bytes: bytes.length });
+    const result = await qualify({ artifact, acceptedSnapshot, acceptedSha, rendered });
+    await writeFileBytes(out, bytes);
+    return result;
+  });
 }
 
 /**
@@ -189,27 +199,31 @@ export const advanceReaderRenditionType = defineSchemaType({
 /**
  * Render, compare and record one advance-reader copy of a release-accepted EPUB. Refuses an EPUB whose bytes are
  * not the ones the release acceptance names, and a rendition whose comparison fails. `validate` is the EPUB
- * validator (kindle-validation's validateEpub); its outcome is recorded and a failing one refuses the copy.
+ * validator (kindle-validation's validateEpub) receives a private staged artifact. A failing validation or
+ * record never replaces the destination.
  */
 export async function renderAdvanceReaderCopy({ book, acceptedEpub, releaseAcceptance, outPath, notice, stamp = null }, { validate = null } = {}) {
   const acceptance = releaseAcceptance.content ?? releaseAcceptance;
   if (acceptance.type !== "KindleReleaseAcceptance" || acceptance.status !== "release-ready") throw new Error("an advance-reader copy is derived only from a release-ready acceptance");
-  const acceptedSha = values.sha256Hex(await readFile(resolve(acceptedEpub)));
-  if (acceptedSha !== acceptance.rendition.artifactSha256) throw new Error(`the EPUB is ${acceptedSha}, not the accepted ${acceptance.rendition.artifactSha256}`);
-  const rendered = await renderAdvanceReaderEpub({ acceptedEpub, outPath, notice, stamp });
-  const comparison = await compareAdvanceReaderRendition(acceptedEpub, outPath);
-  if (!comparison.passed) throw new Error(`the rendition differs from the accepted EPUB beyond its page: ${JSON.stringify(comparison)}`);
-  const validated = validate ? await validate(outPath) : null;
-  if (validated && validated.outcome === "fail") throw new Error(`the rendition fails ${validated.profile?.id ?? "EPUB validation"} with ${validated.errors} errors`);
-  const validation = validated ? { outcome: validated.outcome, ...(validated.profile ? { profile: validated.profile.id } : {}), ...(Number.isInteger(validated.errors) ? { errors: validated.errors, warnings: validated.warnings } : {}), ...(validated.report ? { report: validated.report } : {}) } : null;
-  const cell = createTypedMark(advanceReaderRenditionType, {
-    type: "AdvanceReaderRendition", version: 1, book, rendition: ADVANCE_READER_RENDITION,
-    editionInputDigest: acceptance.editionInputDigest,
-    accepted: { artifactSha256: acceptedSha, releaseAcceptance: releaseAcceptance.id ?? acceptance.id },
-    artifactSha256: rendered.artifactSha256,
-    page: { sha256: rendered.pageSha256, status: notice.status, uncorrected: Boolean(notice.uncorrected), onSale: notice.onSale },
-    grant: stamp?.grant ?? null, comparison: { ...comparison }, validation,
-  });
-  if (!cell.ok) throw new TypeError(cell.refusal.message);
-  return cell.value;
+  const expectedAcceptedSha = acceptance.rendition?.artifactSha256;
+  if (!/^[0-9a-f]{64}$/u.test(expectedAcceptedSha ?? "")) throw new TypeError("the release acceptance must name the EPUB SHA-256");
+  return receiveAdvanceReaderEpub({ acceptedEpub, outPath, notice, stamp }, async ({ artifact, acceptedSnapshot, acceptedSha, rendered }) => {
+    const comparison = await compareAdvanceReaderRendition(acceptedSnapshot, artifact);
+    if (!comparison.passed) throw new Error(`the rendition differs from the accepted EPUB beyond its page: ${JSON.stringify(comparison)}`);
+    const validated = validate ? await validate(artifact) : null;
+    if (validated && validated.outcome === "fail") throw new Error(`the rendition fails ${validated.profile?.id ?? "EPUB validation"} with ${validated.errors} errors`);
+    if (validate && values.sha256Hex(await readFile(artifact)) !== rendered.artifactSha256)
+      throw new Error("validation changed the staged EPUB");
+    const validation = validated ? { outcome: validated.outcome, ...(validated.profile ? { profile: validated.profile.id } : {}), ...(Number.isInteger(validated.errors) ? { errors: validated.errors, warnings: validated.warnings } : {}), ...(validated.report ? { report: validated.report } : {}) } : null;
+    const cell = createTypedMark(advanceReaderRenditionType, {
+      type: "AdvanceReaderRendition", version: 1, book, rendition: ADVANCE_READER_RENDITION,
+      editionInputDigest: acceptance.editionInputDigest,
+      accepted: { artifactSha256: acceptedSha, releaseAcceptance: releaseAcceptance.id ?? acceptance.id },
+      artifactSha256: rendered.artifactSha256,
+      page: { sha256: rendered.pageSha256, status: notice.status, uncorrected: Boolean(notice.uncorrected), onSale: notice.onSale },
+      grant: stamp?.grant ?? null, comparison: { ...comparison }, validation,
+    });
+    if (!cell.ok) throw new TypeError(cell.refusal.message);
+    return cell.value;
+  }, expectedAcceptedSha);
 }
