@@ -1,7 +1,7 @@
 /**
  * @module derive-ebook-chapters-from-corpus
  * Reads named section roots off the live corpus through the house
- * Markdown and vault-bundling readers, and writes one
+ * Markdown and CAIRN source readers, and writes one
  * ordered chapters directory of frontmatter-carrying Markdown plus a
  * partial ebook-production manifest. Never authors chapter prose by hand:
  * every fact in a chapter comes from a carrier this operation reads
@@ -12,7 +12,7 @@ import { mkdir } from "node:fs/promises";
 import { basename, join } from "node:path";
 import { validateJsonSchema } from "@red-cup-engineering/json-schema-engineering-services-section/validation";
 import { readMarkdownFile } from "@red-cup-engineering/markdown-engineering-services-section/read-markdown-file";
-import { bundleMarkdownVaultCarriers } from "@red-cup-engineering/markdown-vault-bundle-engineering-services-section";
+import { ARCHIVE_EXCLUDES, openMarkdownVault } from "@red-cup-engineering/cairn/markdown-vault";
 import { walkPosixPaths } from "@red-cup-engineering/computer-filepath-engineering-services-section/walk-posix-paths";
 import { readFileText } from "@red-cup-engineering/computer-file-engineering-services-section/read-file";
 import { writeMarkdownFile } from "@red-cup-engineering/markdown-engineering-services-section/write-markdown-file";
@@ -164,17 +164,26 @@ async function listDataRecords(sectionRoot) {
 }
 
 /**
- * List a section's own notes via the house vault bundler's own selection
- * (its manifest.carriers), rather than re-walking the filesystem by hand.
+ * List well-formed source notes through CAIRN's existing local reading API.
+ * This path inventory needs no book-sized bundle, receipt, index or graph.
  * @param {string} sectionRoot
  * @returns {Promise<string[]>} sorted relative note paths
  */
 async function listNotes(sectionRoot) {
-  const bundle = await bundleMarkdownVaultCarriers({ root: sectionRoot, roles: ["articles"] });
-  return bundle.manifest.carriers
-    .map((carrier) => carrier.path)
-    .filter((path) => path.includes("/notes/"))
-    .sort();
+  const vault = await openMarkdownVault({
+    root: sectionRoot,
+    excludes: [...ARCHIVE_EXCLUDES, "legacy", "triage"],
+    admitPath: (path) =>
+      /(?:^|\/)content\/text\/documents\/articles\/notes\//u.test(path) &&
+      !/--archive-[^/]*\.(?:md|markdown)$/iu.test(path),
+  });
+  if (!vault.snapshot.inventoryComplete) throw new Error("cannot list notes from an incomplete vault inventory");
+  const notes = [];
+  for (const path of vault.paths) {
+    const reading = await vault.read(path);
+    if (reading.diagnostics.length === 0) notes.push(path);
+  }
+  return notes.sort();
 }
 
 /**
