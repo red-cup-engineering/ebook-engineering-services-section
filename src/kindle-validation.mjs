@@ -1,8 +1,9 @@
-import { access, mkdir, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
+import { makeTemporaryDirectory } from "@red-cup-engineering/computer-file-engineering-services-section/temporary-directory";
+import { access, mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { spawn } from "node:child_process";
 import { createHash, sign as signBytes, verify as verifyBytes } from "node:crypto";
 import { basename, dirname, join, posix, resolve } from "node:path";
-import { tmpdir } from "node:os";
+
 import { defineSchemaType } from "@red-cup-engineering/typed-content";
 import { admitTypedMark, createTypedMark } from "@red-cup-engineering/typed-content";
 
@@ -111,7 +112,9 @@ export async function validateEpub(epubPath, { profile = EPUB_VALIDATOR_PROFILES
   const runCommand = capabilities.runCommand ?? ((command, args) => run(command, args, capabilities));
   const versionResult = await runCommand(tool.command, [...tool.prefix, "--version"]), observedVersion = capabilities.toolVersion ?? versionFrom(`${versionResult.stdout}\n${versionResult.stderr}`);
   if (versionResult.status !== 0 || observedVersion !== profile.toolVersion) return Object.freeze({ outcome: "refused", passed: false, profile, tool: { ...tool, observedVersion }, obstruction: "validator-version-mismatch", stdout: versionResult.stdout, stderr: versionResult.stderr });
-  const scratch = await mkdtemp(join(tmpdir(), "epubcheck-report-"));
+  const temporaryDirectory2 = makeTemporaryDirectory("epubcheck-report");
+  try {
+const scratch = temporaryDirectory2.path;
   try {
     const reportPath = join(scratch, "report.json"), result = await runCommand(tool.command, [...tool.prefix, resolve(epubPath), "--json", reportPath]);
     let report;
@@ -119,6 +122,10 @@ export async function validateEpub(epubPath, { profile = EPUB_VALIDATOR_PROFILES
     const counts = reportCounts(report), reportArtifact = await storeJsonEvidence(evidenceRoot, profile.id, report);
     return Object.freeze({ outcome: result.status === 0 ? "pass" : "fail", passed: result.status === 0, profile, tool: { ...tool, observedVersion }, errors: counts.errors, warnings: counts.warnings, report: reportArtifact, exitStatus: result.status, signal: result.signal });
   } finally { await rm(scratch, { recursive: true, force: true }); }
+
+  } finally {
+    temporaryDirectory2.remove();
+  }
 }
 
 async function readZipEntries(epubPath, capabilities = {}) {
@@ -170,13 +177,19 @@ export function assayRetailerPortability(features) {
 async function accessibilityEvidence(epubPath, evidenceRoot, capabilities = {}) {
   const manual = capabilities.manualAccessibilityAssessment ?? { outcome: "untested", assessmentDigest: null, reason: "No manual accessibility assessment was supplied; no conformance claim is made." }, exists = capabilities.exists ?? commandExists;
   if (!(await exists("ace", capabilities.env ?? process.env))) return Object.freeze({ type: "EpubAccessibilityEvidence", version: 1, target: "EPUB Accessibility 1.1", automated: { outcome: "untested", obstruction: "ace-unavailable" }, manual, conformsTo: null });
-  const runCommand = capabilities.runCommand ?? ((command, args) => run(command, args, capabilities)), version = await runCommand("ace", ["--version"]), observedVersion = versionFrom(`${version.stdout}\n${version.stderr}`), scratch = await mkdtemp(join(tmpdir(), "ace-report-"));
+  const temporaryDirectory = makeTemporaryDirectory("ace-report");
+  try {
+const runCommand = capabilities.runCommand ?? ((command, args) => run(command, args, capabilities)), version = await runCommand("ace", ["--version"]), observedVersion = versionFrom(`${version.stdout}\n${version.stderr}`), scratch = temporaryDirectory.path;
   try {
     const result = await runCommand("ace", ["--outdir", scratch, resolve(epubPath)]); let report;
     try { report = JSON.parse(await readFile(join(scratch, "report.json"), "utf8")); } catch { report = { stdout: result.stdout, stderr: result.stderr, exitStatus: result.status }; }
     const reportArtifact = await storeJsonEvidence(evidenceRoot, "ace", report);
     return Object.freeze({ type: "EpubAccessibilityEvidence", version: 1, target: "EPUB Accessibility 1.1", automated: { tool: "ace", toolVersion: observedVersion, report: reportArtifact, outcome: result.status === 0 ? "pass" : "fail" }, manual, conformsTo: manual.outcome === "pass" && result.status === 0 ? "EPUB Accessibility 1.1" : null });
   } finally { await rm(scratch, { recursive: true, force: true }); }
+
+  } finally {
+    temporaryDirectory.remove();
+  }
 }
 
 /** Validate the KDP ebook-cover envelope. Unknown metadata is a failure, never a zero. */

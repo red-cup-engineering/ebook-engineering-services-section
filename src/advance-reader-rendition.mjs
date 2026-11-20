@@ -1,7 +1,8 @@
+import { makeTemporaryDirectory } from "@red-cup-engineering/computer-file-engineering-services-section/temporary-directory";
 import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
-import { chmod, copyFile, mkdir, mkdtemp, readFile, rm, utimes, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
+import { chmod, copyFile, mkdir, readFile, rm, utimes, writeFile } from "node:fs/promises";
+
 import { dirname, join, resolve } from "node:path";
 import { promisify } from "node:util";
 import { defineSchemaType } from "@red-cup-engineering/typed-content";
@@ -124,7 +125,9 @@ export async function renderAdvanceReaderEpub({ acceptedEpub, outPath, notice, s
   const entries = [[opfEntry, withAdvanceReaderPackage(opf, { titlePageItemId, grant: stamp?.grant ?? null })], [`${root}${PAGE_ENTRY}`, page]];
   await mkdir(dirname(out), { recursive: true });
   await copyFile(accepted, out);
-  const staging = await mkdtemp(join(tmpdir(), "advance-reader-"));
+  const temporaryDirectory = makeTemporaryDirectory("advance-reader");
+  try {
+const staging = temporaryDirectory.path;
   const epoch = new Date(modified);
   try {
     for (const [entry, text] of entries) {
@@ -140,6 +143,10 @@ export async function renderAdvanceReaderEpub({ acceptedEpub, outPath, notice, s
   }
   const bytes = await readFile(out);
   return Object.freeze({ artifactSha256: sha256(bytes), pageSha256: sha256(Buffer.from(page, "utf8")), bytes: bytes.length });
+
+  } finally {
+    temporaryDirectory.remove();
+  }
 }
 
 /**
