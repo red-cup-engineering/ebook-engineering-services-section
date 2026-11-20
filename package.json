@@ -53,6 +53,9 @@
     "@red-cup-engineering/semantic-record-journal-service": "0.6.3",
     "@red-cup-engineering/typed-content": "0.1.0-dev.0"
   },
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/red-cup-engineering/ebook-engineering-services-section.git"
