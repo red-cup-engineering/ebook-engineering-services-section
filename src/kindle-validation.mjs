@@ -1,3 +1,4 @@
+import { sha256Hex } from "@red-cup-engineering/semiotic-content-address-system";
 import { makeTemporaryDirectory } from "@red-cup-engineering/computer-file-engineering-services-section/temporary-directory";
 import { access, mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { spawn } from "node:child_process";
@@ -53,8 +54,8 @@ export const kindleReleaseAcceptanceType = defineSchemaType({
   },
 });
 
-const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
-const artifact = async (path) => { const bytes = await readFile(path); return Object.freeze({ name: basename(path), bytes: bytes.byteLength, sha256: sha256(bytes) }); };
+
+const artifact = async (path) => { const bytes = await readFile(path); return Object.freeze({ name: basename(path), bytes: bytes.byteLength, sha256: sha256Hex(bytes) }); };
 const bounded = (value) => String(value ?? "").replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/gu, "").slice(-16_000);
 
 async function commandExists(command, env = process.env) {
@@ -92,7 +93,7 @@ export async function detectEpubcheck({ profile = EPUB_VALIDATOR_PROFILES.releas
 }
 
 async function storeJsonEvidence(root, label, value) {
-  const bytes = Buffer.from(`${JSON.stringify(value, null, 2)}\n`), digest = sha256(bytes);
+  const bytes = Buffer.from(`${JSON.stringify(value, null, 2)}\n`), digest = sha256Hex(bytes);
   await mkdir(root, { recursive: true }); const name = `${label}-${digest}.json`, path = join(root, name);
   try { await writeFile(path, bytes, { flag: "wx", mode: 0o600 }); } catch (error) { if (error?.code !== "EEXIST") throw error; }
   return Object.freeze({ name, bytes: bytes.byteLength, sha256: digest });

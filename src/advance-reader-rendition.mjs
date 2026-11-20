@@ -1,3 +1,4 @@
+import * as values from "@red-cup-engineering/semiotic-content-address-system";
 import { makeTemporaryDirectory } from "@red-cup-engineering/computer-file-engineering-services-section/temporary-directory";
 import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -25,7 +26,7 @@ const GRANT = /^[A-Za-z0-9_-]{8,128}$/u;
 
 const escapeXml = (text) => String(text).replace(/[&<>"']/gu, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
 const longDate = (isoDate) => new Intl.DateTimeFormat("en-US", { dateStyle: "long", timeZone: "UTC" }).format(new Date(`${isoDate}T00:00:00Z`));
-const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
+
 
 /**
  * The page a reader sees before the book. `status` is `advance` before the book is on sale and `review` once it is;
@@ -142,7 +143,7 @@ const staging = temporaryDirectory.path;
     await rm(staging, { recursive: true, force: true });
   }
   const bytes = await readFile(out);
-  return Object.freeze({ artifactSha256: sha256(bytes), pageSha256: sha256(Buffer.from(page, "utf8")), bytes: bytes.length });
+  return Object.freeze({ artifactSha256: values.sha256Hex(bytes), pageSha256: values.sha256Hex(Buffer.from(page, "utf8")), bytes: bytes.length });
 
   } finally {
     temporaryDirectory.remove();
@@ -193,7 +194,7 @@ export const advanceReaderRenditionType = defineSchemaType({
 export async function renderAdvanceReaderCopy({ book, acceptedEpub, releaseAcceptance, outPath, notice, stamp = null }, { validate = null } = {}) {
   const acceptance = releaseAcceptance.content ?? releaseAcceptance;
   if (acceptance.type !== "KindleReleaseAcceptance" || acceptance.status !== "release-ready") throw new Error("an advance-reader copy is derived only from a release-ready acceptance");
-  const acceptedSha = sha256(await readFile(resolve(acceptedEpub)));
+  const acceptedSha = values.sha256Hex(await readFile(resolve(acceptedEpub)));
   if (acceptedSha !== acceptance.rendition.artifactSha256) throw new Error(`the EPUB is ${acceptedSha}, not the accepted ${acceptance.rendition.artifactSha256}`);
   const rendered = await renderAdvanceReaderEpub({ acceptedEpub, outPath, notice, stamp });
   const comparison = await compareAdvanceReaderRendition(acceptedEpub, outPath);
