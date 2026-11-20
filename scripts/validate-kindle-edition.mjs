@@ -10,7 +10,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { parseArgs } from "node:util";
-import { acceptKindleRelease, validateKindleEdition, signKindleValidationRecord } from "../src/kindle-validation.mjs";
+import { acceptKindleRelease, validateKindleEdition, signKindleValidationReceipt } from "../src/kindle-validation.mjs";
 
 const usage = "usage: validate-kindle-edition --book <slug> --epub <file> --cover <file> [--evidence-root <dir>] [--out <receipt.json>] [--private-key <pem> --key-id <id>] [--fabrication <edition.json> --acceptance <acceptance.json> --release-out <release-acceptance.json>]";
 const { values } = parseArgs({ options: Object.fromEntries(["book", "epub", "cover", "out", "evidence-root", "private-key", "key-id", "fabrication", "acceptance", "release-out"].map((name) => [name, { type: "string" }])) });
@@ -28,7 +28,7 @@ if (!cell.content.passed) {
   process.stderr.write(`Kindle validation failed: ${failing.join(", ") || "see the printed cell"}\n`);
   process.exitCode = 1;
 } else {
-  const result = values["private-key"] ? signKindleValidationRecord(cell, await readFile(resolve(values["private-key"]), "utf8"), values["key-id"]) : cell;
+  const result = values["private-key"] ? signKindleValidationReceipt(cell, await readFile(resolve(values["private-key"]), "utf8"), values["key-id"]) : cell;
   const text = `${JSON.stringify(result, null, 2)}\n`;
   if (values.out) await writeFile(resolve(values.out), text, { flag: "wx", mode: 0o600 });
   process.stdout.write(text);
