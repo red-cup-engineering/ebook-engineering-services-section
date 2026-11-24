@@ -51,9 +51,6 @@
     "@red-cup-engineering/semiotic-content-address-system": "^0.1.5",
     "@red-cup-engineering/typed-content": "0.1.0-dev.0 || 0.1.0 || 0.1.1-dev.0"
   },
-  "scripts": {
-    "test": "node --test test/*.test.mjs"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/red-cup-engineering/ebook-engineering-services-section.git"
