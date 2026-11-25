@@ -6,7 +6,7 @@
  * scripts/produce-ebook.mjs, which calls buildRecord here.
  */
 
-import { makeNiUri, sha256Hex } from "@red-cup-engineering/semiotic-content-address-system";
+import { makeNiUri, semanticId, sha256Hex } from "@red-cup-engineering/semiotic-content-address-system";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { readMarkdownFrontmatter } from "@red-cup-engineering/markdown-engineering-services-section/read-markdown-frontmatter";
@@ -414,8 +414,7 @@ export function sha256ChapterSet(chapterPaths) {
  * @returns {string} the RFC 6920 sha-256 `ni:` URI for chapterSet + template + css
  */
 export function sha256SourceHash(chapterPaths, templateHash, cssHash = null, assetHashes = []) {
-  const assets = assetHashes.length === 0 ? "" : `:${assetHashes.join(":")}`;
-  return makeNiUri(Buffer.from(`${sha256ChapterSet(chapterPaths)}:${templateHash}:${cssHash ?? ""}${assets}`, "utf8"));
+  return semanticId([sha256ChapterSet(chapterPaths), templateHash, cssHash ?? "", assetHashes]);
 }
 
 const EDITION_DATE = /^\d{4}-\d{2}-\d{2}$/u;
