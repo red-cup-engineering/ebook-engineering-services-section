@@ -13,10 +13,9 @@ import {
   admitArtifactFabricationRealizationPlan,
   admitArtifactFabricationSpecification,
 } from "@red-cup-engineering/computer-data-engineering-services-section/artifact-fabrication";
-import { designTokenStyle, listChapters, normalizeAssets, sha256File, sha256SourceHash } from "./ebook-production.mjs";
-import { sha256Hex } from "@red-cup-engineering/cryptographic-computer-data-engineering-services-section/integrity";
-import { semanticId } from "@red-cup-engineering/semiotic-content-address-system";
-import { isNiUri } from "@red-cup-engineering/uri-engineering-services-section/ni-uri";
+import { designTokenStyle, listChapters, normalizeAssets, sha256SourceHash } from "./ebook-production.mjs";
+import { isNiUri, makeNiUri, semanticId, sha256Hex } from "@red-cup-engineering/semiotic-content-address-system";
+
 
 const SECTION_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const DEFAULT_TEMPLATE = join(SECTION_ROOT, "templates", "book.latex");
@@ -131,7 +130,7 @@ function sourceDigest(source) {
     }
   }
   // The PDF's layout filter shapes its bytes as the template does, so both are bound.
-  const chapterAndTemplateDigest = sha256SourceHash(chapters, sha256File(DEFAULT_TEMPLATE) + sha256File(BOOK_LAYOUT_FILTER), sha256File(DEFAULT_CSS), assets.map((asset) => sha256File(asset.path)));
+  const chapterAndTemplateDigest = sha256SourceHash(chapters, makeNiUri(readFileSync(DEFAULT_TEMPLATE)) + makeNiUri(readFileSync(BOOK_LAYOUT_FILTER)), makeNiUri(readFileSync(DEFAULT_CSS)), assets.map((asset) => makeNiUri(readFileSync(asset.path))));
   return semanticId({
     chapterAndTemplateDigest,
     slug: source.slug,
@@ -145,12 +144,12 @@ function sourceDigest(source) {
     ...(source.style === undefined ? {} : { style: source.style }),
     // Design tokens are bound by their bytes, since the stylesheet and the
     // PDF's fonts and colors are derived from them at render time.
-    ...(source.tokens === undefined ? {} : { designTokensDigest: sha256File(source.tokens) }),
+    ...(source.tokens === undefined ? {} : { designTokensDigest: makeNiUri(readFileSync(source.tokens)) }),
     // A cover is set from its kind's template, so the template's bytes are bound too.
-    ...(source.cover === undefined ? {} : { cover: source.cover, coverTemplateDigest: sha256File(COVER_TEMPLATES[source.cover]) }),
+    ...(source.cover === undefined ? {} : { cover: source.cover, coverTemplateDigest: makeNiUri(readFileSync(COVER_TEMPLATES[source.cover])) }),
     // A book's own cover art (a TikZ drawing, or an illustration, beside its manuscript) is bound by its bytes.
-    ...(source.coverArt === undefined ? {} : { coverArtDigest: sha256File(source.coverArt) }),
-    ...(assets.length === 0 ? {} : { assets: assets.map((asset) => ({ path: relative(source.bookDir, asset.path), alt: asset.alt, role: asset.role, ...(asset.provenance === undefined ? {} : { provenance: asset.provenance }), digest: sha256File(asset.path) })) }),
+    ...(source.coverArt === undefined ? {} : { coverArtDigest: makeNiUri(readFileSync(source.coverArt)) }),
+    ...(assets.length === 0 ? {} : { assets: assets.map((asset) => ({ path: relative(source.bookDir, asset.path), alt: asset.alt, role: asset.role, ...(asset.provenance === undefined ? {} : { provenance: asset.provenance }), digest: makeNiUri(readFileSync(asset.path)) })) }),
     ...(source.series === undefined ? {} : { series: source.series }),
     // A copyright page is generated from the rights a book states, so they are bound like its text.
     ...(source.rights === undefined ? {} : { rights: source.rights }),
@@ -187,7 +186,7 @@ function verifiedArtifact(artifact) {
     throw new Error("renderer returned an artifact without a path and SHA-256 digest");
   }
   const bytes = statSync(artifact.path).size;
-  const digest = sha256File(artifact.path);
+  const digest = makeNiUri(readFileSync(artifact.path));
   if (bytes !== artifact.bytes || digest !== artifact.sha256) {
     throw new Error(`renderer artifact evidence does not match bytes at ${artifact.path}`);
   }

@@ -2,7 +2,7 @@ import { sha256Hex } from "@red-cup-engineering/semiotic-content-address-system"
 import { makeTemporaryDirectory } from "@red-cup-engineering/computer-file-engineering-services-section/temporary-directory";
 import { access, mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { spawn } from "node:child_process";
-import { createHash, sign as signBytes, verify as verifyBytes } from "node:crypto";
+import { sign as signBytes, verify as verifyBytes } from "node:crypto";
 import { basename, dirname, join, posix, resolve } from "node:path";
 
 import { defineSchemaType } from "@red-cup-engineering/typed-content";

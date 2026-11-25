@@ -6,11 +6,11 @@
  * scripts/produce-ebook.mjs, which calls buildRecord here.
  */
 
-import { createHash } from "node:crypto";
+import { makeNiUri, sha256Hex } from "@red-cup-engineering/semiotic-content-address-system";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { readMarkdownFrontmatter } from "@red-cup-engineering/markdown-engineering-services-section/read-markdown-frontmatter";
-import { makeNiUri } from "@red-cup-engineering/uri-engineering-services-section/ni-uri";
+
 import { canonicalJson } from "@red-cup-engineering/json-engine/canonical-json";
 import { cssFontFamilyList, designTokenColor, designTokenFontStack, designTokenValue, hasDesignToken } from "@red-cup-engineering/web-theming-service/design-tokens";
 
@@ -384,22 +384,6 @@ export function collectReferences(chapterPaths) {
 }
 
 /**
- * @param {string} filePath
- * @returns {string} the RFC 6920 sha-256 `ni:` URI for the file's bytes
- */
-export function sha256File(filePath) {
-  return sha256Buffer(readFileSync(filePath));
-}
-
-/**
- * @param {Buffer} buffer
- * @returns {string} the RFC 6920 sha-256 `ni:` URI for the buffer's bytes
- */
-export function sha256Buffer(buffer) {
-  return makeNiUri(buffer);
-}
-
-/**
  * Hash the ordered chapter set: each chapter file is hashed individually,
  * then the ordered digest URIs are joined with "\n" and hashed again. This
  * makes the chapter-set hash sensitive to chapter content, chapter order,
@@ -409,7 +393,7 @@ export function sha256Buffer(buffer) {
  * @returns {string} the RFC 6920 sha-256 `ni:` URI for the ordered chapter set
  */
 export function sha256ChapterSet(chapterPaths) {
-  const perChapter = chapterPaths.map((path) => sha256File(path));
+  const perChapter = chapterPaths.map((path) => makeNiUri(readFileSync(path)));
   return makeNiUri(Buffer.from(perChapter.join("\n"), "utf8"));
 }
 
@@ -469,7 +453,7 @@ export function withDeterministicPdfIdentifier(bytes) {
   const found = [...text.matchAll(pattern)];
   if (found.length === 0) return bytes;
   const zeroed = text.replace(pattern, (match, first, second) => match.replace(first, "0".repeat(first.length)).replace(second, "0".repeat(second.length)));
-  const digest = createHash("sha256").update(Buffer.from(zeroed, "latin1")).digest("hex").repeat(4);
+  const digest = sha256Hex(Buffer.from(zeroed, "latin1")).repeat(4);
   // Uppercase only where the original used uppercase letters; a canonical all-zero /ID is lowercase.
   const identifier = (hex) => (/[A-F]/u.test(hex) ? digest.toUpperCase() : digest).slice(0, hex.length);
   return Buffer.from(text.replace(pattern, (match, first, second) => match.replace(first, identifier(first)).replace(second, identifier(second))), "latin1");

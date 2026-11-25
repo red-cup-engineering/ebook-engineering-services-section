@@ -1,8 +1,7 @@
 /** Pure projection of an ordered Markdown manuscript into a sound-score narration layer. */
-import { createHash } from "node:crypto";
+import { makeNiUri, utf8Bytes } from "@red-cup-engineering/semiotic-content-address-system";
 import { readMarkdownFrontmatter } from "@red-cup-engineering/markdown-engineering-services-section/read-markdown-frontmatter";
 
-const digest = (value) => `ni:///sha-256;${createHash("sha256").update(value).digest("base64url")}`;
 const canonical = (value) => JSON.stringify(value);
 
 function marks(markup) {
@@ -78,14 +77,14 @@ function voiceForSpeaker(speakerId, pointOfView, storyBible) {
 }
 
 function narratedEvent({ chapterPath, paragraphIndex, sentenceIndex, kind, text, markup, speakerId, voice, style }) {
-  const anchor = Object.freeze({ chapter: chapterPath, paragraph: paragraphIndex, sentence: sentenceIndex, contentDigest: digest(text) });
-  const id = digest(canonical(anchor));
-  return Object.freeze({ type: "narrate", id, digest: digest(canonical({ anchor, speakerId, voice, style, text })), anchor, kind, text, markup, markers: marks(markup), speakerId, voice, style });
+  const anchor = Object.freeze({ chapter: chapterPath, paragraph: paragraphIndex, sentence: sentenceIndex, contentDigest: makeNiUri(utf8Bytes(text)) });
+  const id = makeNiUri(utf8Bytes(canonical(anchor)));
+  return Object.freeze({ type: "narrate", id, digest: makeNiUri(utf8Bytes(canonical({ anchor, speakerId, voice, style, text }))), anchor, kind, text, markup, markers: marks(markup), speakerId, voice, style });
 }
 
 const cue = (kind, durationSeconds, fields = {}) => {
   const value = { type: "cue", cue: kind, durationSeconds, ...fields };
-  const identity = digest(canonical(value));
+  const identity = makeNiUri(utf8Bytes(canonical(value)));
   return Object.freeze({ ...value, id: identity, digest: identity });
 };
 
@@ -127,7 +126,7 @@ export function deriveSoundScoreNarrationLayer({ slug, title, author, chapters, 
     return Object.freeze({ index: chapterIndex + 1, path: chapter.path, title: spoken(titleBlock?.markup ?? `Chapter ${chapterIndex + 1}`), pointOfView, events: Object.freeze(events) });
   });
   const value = { type: "SoundScoreNarrationLayer", version: 1, slug, title, author, language, disclosure, chapters: Object.freeze(projected) };
-  return Object.freeze({ ...value, digest: digest(canonical(value)) });
+  return Object.freeze({ ...value, digest: makeNiUri(utf8Bytes(canonical(value))) });
 }
 
 /** Compatibility name for consumers migrating from the former narration script. */
