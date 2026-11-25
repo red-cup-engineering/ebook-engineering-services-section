@@ -1,8 +1,7 @@
 /** Pure projection of an ordered Markdown manuscript into a sound-score narration layer. */
+import { canonicalJson } from "@red-cup-engineering/json-engine/canonical-json";
 import { makeNiUri, utf8Bytes } from "@red-cup-engineering/semiotic-content-address-system";
 import { readMarkdownFrontmatter } from "@red-cup-engineering/markdown-engineering-services-section/read-markdown-frontmatter";
-
-const canonical = (value) => JSON.stringify(value);
 
 function marks(markup) {
   const found = [];
@@ -78,13 +77,13 @@ function voiceForSpeaker(speakerId, pointOfView, storyBible) {
 
 function narratedEvent({ chapterPath, paragraphIndex, sentenceIndex, kind, text, markup, speakerId, voice, style }) {
   const anchor = Object.freeze({ chapter: chapterPath, paragraph: paragraphIndex, sentence: sentenceIndex, contentDigest: makeNiUri(utf8Bytes(text)) });
-  const id = makeNiUri(utf8Bytes(canonical(anchor)));
-  return Object.freeze({ type: "narrate", id, digest: makeNiUri(utf8Bytes(canonical({ anchor, speakerId, voice, style, text }))), anchor, kind, text, markup, markers: marks(markup), speakerId, voice, style });
+  const id = makeNiUri(utf8Bytes(canonicalJson(anchor)));
+  return Object.freeze({ type: "narrate", id, digest: makeNiUri(utf8Bytes(canonicalJson({ anchor, speakerId, voice, style, text }))), anchor, kind, text, markup, markers: marks(markup), speakerId, voice, style });
 }
 
 const cue = (kind, durationSeconds, fields = {}) => {
   const value = { type: "cue", cue: kind, durationSeconds, ...fields };
-  const identity = makeNiUri(utf8Bytes(canonical(value)));
+  const identity = makeNiUri(utf8Bytes(canonicalJson(value)));
   return Object.freeze({ ...value, id: identity, digest: identity });
 };
 
@@ -126,7 +125,7 @@ export function deriveSoundScoreNarrationLayer({ slug, title, author, chapters, 
     return Object.freeze({ index: chapterIndex + 1, path: chapter.path, title: spoken(titleBlock?.markup ?? `Chapter ${chapterIndex + 1}`), pointOfView, events: Object.freeze(events) });
   });
   const value = { type: "SoundScoreNarrationLayer", version: 1, slug, title, author, language, disclosure, chapters: Object.freeze(projected) };
-  return Object.freeze({ ...value, digest: makeNiUri(utf8Bytes(canonical(value))) });
+  return Object.freeze({ ...value, digest: makeNiUri(utf8Bytes(canonicalJson(value))) });
 }
 
 /** Compatibility name for consumers migrating from the former narration script. */
